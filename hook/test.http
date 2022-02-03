@@ -1,4 +1,4 @@
-POST http://10.0.76.177:8080/api/v1/hook/github
+POST https://smee.io/xzMYO1EMlJciCLhw
 Content-Type: application/json
 
 {"name": "Spring in Action", "price": 1.00, "author": "Craig Walls"}
