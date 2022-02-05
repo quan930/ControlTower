@@ -44,12 +44,12 @@ func NCSACommonLogFormatLogger() restful.FilterFunction {
 			}
 		}
 		chain.ProcessFilter(req, resp)
-		klog.Info(strings.Split(req.Request.RemoteAddr, ":")[0]," - ",
-			username," \"",
-			req.Request.Method," ",
-			req.Request.URL.RequestURI()," ",
-			req.Request.Proto,"\" ",
-			resp.StatusCode()," ",
+		klog.Info(strings.Split(req.Request.RemoteAddr, ":")[0], " - ",
+			username, " \"",
+			req.Request.Method, " ",
+			req.Request.URL.RequestURI(), " ",
+			req.Request.Proto, "\" ",
+			resp.StatusCode(), " ",
 			resp.ContentLength(),
 		)
 	}
