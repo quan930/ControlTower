@@ -6,4 +6,14 @@ plugins:
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: controltower-operator
 repo: github.com/quan930/ControlTower/ControlTower-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: lilqcn
+  group: cloud
+  kind: Hook
+  path: github.com/quan930/ControlTower/ControlTower-operator/api/v1
+  version: v1
 version: "3"
