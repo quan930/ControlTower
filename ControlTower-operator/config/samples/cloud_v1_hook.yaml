@@ -1,0 +1,6 @@
+apiVersion: cloud.lilqcn/v1
+kind: Hook
+metadata:
+  name: hook-sample
+spec:
+  # Add fields here
