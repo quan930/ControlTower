@@ -1,0 +1,9 @@
+domain: lilqcn
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: controltower-operator
+repo: github.com/quan930/ControlTower/ControlTower-operator
+version: "3"
