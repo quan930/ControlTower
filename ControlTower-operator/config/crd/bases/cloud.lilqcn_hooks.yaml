@@ -36,13 +36,87 @@ spec:
           spec:
             description: HookSpec defines the desired state of Hook
             properties:
-              foo:
-                description: Foo is an example field of Hook. Edit hook_types.go to
-                  remove/update
-                type: string
+              hooks:
+                items:
+                  description: HookItem todo 校验
+                  properties:
+                    branches:
+                      items:
+                        type: string
+                      type: array
+                    git_repository:
+                      type: string
+                    image_build:
+                      type: boolean
+                    image_repository:
+                      type: string
+                    update_image:
+                      type: boolean
+                  required:
+                  - branches
+                  - git_repository
+                  - image_build
+                  - image_repository
+                  - update_image
+                  type: object
+                type: array
+            required:
+            - hooks
             type: object
           status:
             description: HookStatus defines the observed state of Hook
+            properties:
+              git_event_history:
+                items:
+                  description: GitEvent todo 校验
+                  properties:
+                    branch:
+                      type: string
+                    git_repository:
+                      type: string
+                  required:
+                  - branch
+                  - git_repository
+                  type: object
+                type: array
+              git_events:
+                items:
+                  description: GitEvent todo 校验
+                  properties:
+                    branch:
+                      type: string
+                    git_repository:
+                      type: string
+                  required:
+                  - branch
+                  - git_repository
+                  type: object
+                type: array
+              image_event_history:
+                items:
+                  description: ImageEvent todo 校验
+                  properties:
+                    image_repository:
+                      type: string
+                  required:
+                  - image_repository
+                  type: object
+                type: array
+              image_events:
+                items:
+                  description: ImageEvent todo 校验
+                  properties:
+                    image_repository:
+                      type: string
+                  required:
+                  - image_repository
+                  type: object
+                type: array
+            required:
+            - git_event_history
+            - git_events
+            - image_event_history
+            - image_events
             type: object
         type: object
     served: true

@@ -3,4 +3,16 @@ kind: Hook
 metadata:
   name: hook-sample
 spec:
-  # Add fields here
+  hooks:
+      - git_repository: https://github.com/lianglitest/testimage
+        branches:
+          - main
+        image_build: true
+        image_repository: lilqcn/testimage
+        update_image: true
+      - git_repository: https://github.com/lianglitest/testimage
+        branches:
+          - main
+        image_build: true
+        image_repository: lilqcn/testimage
+        update_image: true

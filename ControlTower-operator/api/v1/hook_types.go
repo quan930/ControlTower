@@ -25,17 +25,15 @@ import (
 
 // HookSpec defines the desired state of Hook
 type HookSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Hook. Edit hook_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Hooks []HookItem `json:"hooks"`
 }
 
 // HookStatus defines the observed state of Hook
 type HookStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	GitEvents         []GitEvent   `json:"git_events"`
+	ImageEvents       []ImageEvent `json:"image_events"`
+	GitEventHistory   []GitEvent   `json:"git_event_history"`
+	ImageEventHistory []ImageEvent `json:"image_event_history"`
 }
 
 //+kubebuilder:object:root=true
@@ -61,4 +59,24 @@ type HookList struct {
 
 func init() {
 	SchemeBuilder.Register(&Hook{}, &HookList{})
+}
+
+//HookItem todo 校验
+type HookItem struct {
+	GitRepository   string   `json:"git_repository"`
+	Branches        []string `json:"branches"`
+	ImageRepository string   `json:"image_repository"`
+	ImageBuild      bool     `json:"image_build"`
+	UpdateImage     bool     `json:"update_image"`
+}
+
+//GitEvent todo 校验
+type GitEvent struct {
+	GitRepository string `json:"git_repository"`
+	Branch        string `json:"branch"`
+}
+
+//ImageEvent todo 校验
+type ImageEvent struct {
+	ImageRepository string `json:"image_repository"`
 }
