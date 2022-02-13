@@ -30,7 +30,7 @@ func Register(container *restful.Container) {
 	// WebService过滤器 日志
 	ws.Filter(NCSACommonLogFormatLogger())
 
-	ws.Route(ws.POST("/github").To(githubCon.Test))
+	ws.Route(ws.POST("/github").To(githubCon.GithubHook))
 
 	container.Add(ws)
 }

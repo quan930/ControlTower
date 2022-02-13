@@ -126,7 +126,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 				},
 				Spec: v12.PodSpec{
 					Containers: []v12.Container{{
-						Image: "lilqcn/hook:0.0.2",
+						Image: "lilqcn/hook:0.0.3",
 						Name:  "hook-server",
 						Ports: []v12.ContainerPort{{
 							ContainerPort: 8080,
@@ -136,6 +136,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 						Image: "lilqcn/smee:0.0.2",
 						Name:  "smee",
 					}},
+					ServiceAccountName: "controltower-operator-controller-manager",
 				},
 			},
 		},
