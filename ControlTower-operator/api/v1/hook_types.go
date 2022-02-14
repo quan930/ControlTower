@@ -25,9 +25,9 @@ import (
 
 // HookSpec defines the desired state of Hook
 type HookSpec struct {
+	Hooks       []HookItem   `json:"hooks"`
 	GitEvents   []GitEvent   `json:"git_events"`
 	ImageEvents []ImageEvent `json:"image_events"`
-	Hooks       []HookItem   `json:"hooks"`
 }
 
 // HookStatus defines the observed state of Hook

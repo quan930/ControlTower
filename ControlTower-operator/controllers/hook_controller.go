@@ -72,10 +72,10 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	klog.Info("hook:", hook)
 
-	klog.Info("deployment ........ init =>")
 	foundDeployment := &v1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: "controltower-operator-hook-server", Namespace: "controltower-operator-system"}, foundDeployment)
 	if err != nil && errors.IsNotFound(err) {
+		klog.Info("deployment ........ init =>")
 		// Define a new deployment
 		dep := r.deploymentForControlTower(hook)
 		klog.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
@@ -85,12 +85,12 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			return ctrl.Result{}, err
 		}
 		// Deployment created successfully - return and requeue
+		klog.Info("deployment ........ finish =>")
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
 		klog.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
 	}
-	klog.Info("deployment ........ finish =>")
 	return ctrl.Result{}, nil
 }
 
@@ -126,7 +126,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 				},
 				Spec: v12.PodSpec{
 					Containers: []v12.Container{{
-						Image: "lilqcn/hook:0.0.3",
+						Image: "lilqcn/hook:0.0.4",
 						Name:  "hook-server",
 						Ports: []v12.ContainerPort{{
 							ContainerPort: 8080,
