@@ -10,9 +10,5 @@ spec:
         image_build: true
         image_repository: lilqcn/testimage
         update_image: true
-      - git_repository: https://github.com/lianglitest/testimage
-        branches:
-          - main
-        image_build: true
-        image_repository: lilqcn/testimage
-        update_image: true
+  git_events: []
+  image_events: []
