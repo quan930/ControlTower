@@ -1,45 +1,44 @@
 package main
 
 import (
+	"builder/internal/docker"
 	"builder/internal/git"
-	"context"
-	"fmt"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"k8s.io/klog/v2"
+	"os"
 )
 
-func main2() {
-	//https://github.com/lianglitest/testimage
-
-	repo := git.Clone("https://github.com/lianglitest/testimage", "./temp")
-	err := git.Checkout(repo, "test")
-	if err != nil {
-		klog.Error(err)
-	}
+func parseENV() (string, string, string, string, string, string) {
+	var repo string
+	var branch string
+	var dockerfilePath string
+	var image string
+	var username string
+	var password string
+	repo = os.Getenv("REPO")
+	branch = os.Getenv("BRANCH")
+	dockerfilePath = os.Getenv("DOCKERFILE")
+	image = os.Getenv("IMAGE")
+	username = os.Getenv("USER")
+	password = os.Getenv("PASSWORD")
+	return repo, branch, dockerfilePath, image, username, password
 }
 
 func main() {
-	repo := git.Clone("https://github.com/lianglitest/testimage", "./temp")
-	err := git.Checkout(repo, "test")
+	repoURL, branch, dockerfilePath, image, username, password := parseENV()
+	klog.Info("repo:", repoURL, "\nbranch:", branch, "\ndockerfilePath:", dockerfilePath, "\nimage", image, "\nuser", username, "\npassword", password)
+
+	repo := git.Clone(repoURL, "./temp")
+	err := git.Checkout(repo, branch)
 	if err != nil {
-		klog.Error(err)
+		klog.Fatal(err)
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		klog.Fatal(err)
 	}
 
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
-	if err != nil {
-		panic(err)
-	}
-
-	for _, container := range containers {
-		fmt.Printf("%s %s\n", container.ID[:10], container.Image)
-	}
-	for true {
-
-	}
+	docker.BuildImage(cli, dockerfilePath, "./temp", image)
+	docker.PushImage(cli, username, password, image)
 }

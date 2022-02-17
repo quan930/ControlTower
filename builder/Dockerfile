@@ -8,4 +8,10 @@ RUN go build
 FROM docker:20.10.12-git as runner
 COPY --from=build  /go/src/builder/cmd/builder/builder /run/
 WORKDIR run
+ENV REPO = ""
+ENV BRANCH = ""
+ENV DOCKERFILE = ""
+ENV IMAGE = ""
+ENV USER = ""
+ENV PASSWORD = ""
 CMD ["./builder"]
