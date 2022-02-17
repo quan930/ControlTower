@@ -17,7 +17,7 @@ func Clone(gitUrl string, workPath string) *git.Repository {
 		Progress: os.Stdout,
 	})
 	if err != nil {
-		klog.Info(err)
+		klog.Fatal(err)
 		return nil
 	}
 	return repository
@@ -29,12 +29,12 @@ func Checkout(repo *git.Repository, branchName string) error {
 		RefSpecs: []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
 	})
 	if err != nil {
-		klog.Info(err)
+		klog.Fatal(err)
 	}
 	klog.Info("git checkout ", branchName)
 	wt, err := repo.Worktree()
 	if err != nil {
-		klog.Info(err)
+		klog.Fatal(err)
 	}
 	return wt.Checkout(&git.CheckoutOptions{
 		Branch: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branchName)),
