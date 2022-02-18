@@ -126,7 +126,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 				},
 				Spec: v12.PodSpec{
 					Containers: []v12.Container{{
-						Image: "lilqcn/hook:0.0.4",
+						Image: "lilqcn/hook:0.0.4.1",
 						Name:  "hook-server",
 						Ports: []v12.ContainerPort{{
 							ContainerPort: 8080,
