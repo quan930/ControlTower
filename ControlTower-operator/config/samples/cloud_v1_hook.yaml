@@ -10,5 +10,8 @@ spec:
         image_build: true
         image_repository: lilqcn/testimage
         update_image: true
+        dockerfile: Dockerfile
+        image_repo_user: lilqcn
+        image_repo_password: xxx
   git_events: []
   image_events: []
