@@ -32,8 +32,8 @@ type HookSpec struct {
 
 // HookStatus defines the observed state of Hook
 type HookStatus struct {
-	GitEventHistory   []GitEvent   `json:"git_event_history"`
-	ImageEventHistory []ImageEvent `json:"image_event_history"`
+	GitEventHistory   []GitEventHistory `json:"git_event_history"`
+	ImageEventHistory []ImageEvent      `json:"image_event_history"`
 }
 
 //+kubebuilder:object:root=true
@@ -63,17 +63,28 @@ func init() {
 
 //HookItem todo 校验
 type HookItem struct {
-	GitRepository   string   `json:"git_repository"`
-	Branches        []string `json:"branches"`
-	ImageRepository string   `json:"image_repository"`
-	ImageBuild      bool     `json:"image_build"`
-	UpdateImage     bool     `json:"update_image"`
+	GitRepository     string   `json:"git_repository"`
+	Branches          []string `json:"branches"`
+	ImageRepository   string   `json:"image_repository"`
+	Dockerfile        string   `json:"dockerfile"`
+	ImageRepoUser     string   `json:"image_repo_user"`
+	ImageRepoPassword string   `json:"image_repo_password"`
+	ImageBuild        bool     `json:"image_build"`
+	UpdateImage       bool     `json:"update_image"`
 }
 
 //GitEvent todo 校验
 type GitEvent struct {
 	GitRepository string `json:"git_repository"`
 	Branch        string `json:"branch"`
+}
+
+//GitEventHistory git event history
+type GitEventHistory struct {
+	GitRepository string `json:"git_repository"`
+	Branch        string `json:"branch"`
+	DateTime      string `json:"date_time"`
+	Status        string `json:"status"`
 }
 
 //ImageEvent todo 校验

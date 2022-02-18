@@ -57,18 +57,27 @@ spec:
                       items:
                         type: string
                       type: array
+                    dockerfile:
+                      type: string
                     git_repository:
                       type: string
                     image_build:
                       type: boolean
+                    image_repo_password:
+                      type: string
+                    image_repo_user:
+                      type: string
                     image_repository:
                       type: string
                     update_image:
                       type: boolean
                   required:
                   - branches
+                  - dockerfile
                   - git_repository
                   - image_build
+                  - image_repo_password
+                  - image_repo_user
                   - image_repository
                   - update_image
                   type: object
@@ -93,15 +102,21 @@ spec:
             properties:
               git_event_history:
                 items:
-                  description: GitEvent todo 校验
+                  description: GitEventHistory git event history
                   properties:
                     branch:
                       type: string
+                    date_time:
+                      type: string
                     git_repository:
+                      type: string
+                    status:
                       type: string
                   required:
                   - branch
+                  - date_time
                   - git_repository
+                  - status
                   type: object
                 type: array
               image_event_history:
