@@ -12,6 +12,6 @@ spec:
         update_image: true
         dockerfile: Dockerfile
         image_repo_user: lilqcn
-        image_repo_password: xxx
+        image_repo_password: daquan123456
   git_events: []
   image_events: []

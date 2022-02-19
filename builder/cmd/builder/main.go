@@ -41,4 +41,12 @@ func main() {
 
 	docker.BuildImage(cli, dockerfilePath, "./temp", image)
 	docker.PushImage(cli, username, password, image)
+
+	f, err := os.Create("/lifecycle/main-terminated")
+	defer f.Close()
+	if err != nil {
+		klog.Fatal(err)
+	} else {
+		klog.Info("/lifecycle/main-terminated")
+	}
 }
