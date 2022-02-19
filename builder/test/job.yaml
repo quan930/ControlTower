@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: builder
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      containers:
+        - name: dind
+          image: 'lilqcn/builder:0.0.4-dind'
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: lifecycle
+              mountPath: /lifecycle
+        - name: builder
+          image: 'lilqcn/builder:0.0.4'
+          env:
+            - name: DOCKER_HOST
+              value: tcp://localhost:2375
+            - name: REPO
+              value: https://github.com/lianglitest/testimage
+            - name: BRANCH
+              value: main
+            - name: DOCKERFILE
+              value: Dockerfile
+            - name: IMAGE
+              value: lilqcn/testimage:1.10
+            - name: USER
+              value: xxxxxx
+            - name: PASSWORD
+              value: xxxxxxx
+          volumeMounts:
+            - name: lifecycle
+              mountPath: /lifecycle
+      restartPolicy: OnFailure
+      volumes:
+        - name: lifecycle
+          emptyDir: { }
+  backoffLimit: 4

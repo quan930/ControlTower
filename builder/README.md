@@ -1,6 +1,7 @@
 # ControlTower - builder
 ### version
 + 0.0.4
++ 0.0.4-dind
 ### test
 ```shell
 docker run --privileged -e DOCKER_TLS_CERTDIR="" -d --name dockerd  docker:20.10.12-dind

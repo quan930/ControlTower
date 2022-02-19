@@ -1,0 +1,1 @@
+until [ -f '/lifecycle/main-terminated' ];do sleep 1;done;kill 1 &
