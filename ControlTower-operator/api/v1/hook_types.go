@@ -69,8 +69,6 @@ type HookItem struct {
 	Dockerfile        string   `json:"dockerfile"`
 	ImageRepoUser     string   `json:"image_repo_user"`
 	ImageRepoPassword string   `json:"image_repo_password"`
-	ImageBuild        bool     `json:"image_build"`
-	UpdateImage       bool     `json:"update_image"`
 }
 
 //GitEvent todo 校验

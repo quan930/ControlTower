@@ -194,13 +194,12 @@ func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hoo
 			for _, branch := range item.Branches {
 				if branch == event.Branch {
 					klog.Info("need to deploy buildImage job")
-					uuidD := uuid.New().String()[0:8]
 					size1 := int32(1)
 					size5 := int32(5)
 					tr := true
 					job := &v13.Job{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      hook.Name + "-buildimagejob" + "-" + uuidD,
+							Name:      hook.Name + "-buildimagejob" + "-" + uuid.New().String()[0:8],
 							Namespace: "controltower-operator-system",
 						},
 						Spec: v13.JobSpec{
