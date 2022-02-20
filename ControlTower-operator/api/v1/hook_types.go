@@ -37,9 +37,9 @@ type HookStatus struct {
 }
 
 //+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
 
 // Hook is the Schema for the hooks API
+//+kubebuilder:subresource:status
 type Hook struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

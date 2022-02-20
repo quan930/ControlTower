@@ -18,13 +18,16 @@ package controllers
 
 import (
 	"context"
+	"github.com/google/uuid"
 	v1 "k8s.io/api/apps/v1"
+	v13 "k8s.io/api/batch/v1"
 	v12 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 
 	cloudv1 "github.com/quan930/ControlTower/ControlTower-operator/api/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -52,6 +55,7 @@ type HookReconciler struct {
 //+kubebuilder:rbac:groups=cloud.lilqcn,resources=hooks/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	klog.Info("========== start ===============>")
 	// 获取 MyBook 实例
@@ -71,7 +75,45 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 	klog.Info("hook:", hook)
+	//判断是否有event
+	if len(hook.Spec.GitEvents) > 0 {
+		for i, event := range hook.Spec.GitEvents {
+			//event.GitRepository
+			job := r.checkGitEvent(event, hook)
+			if job != nil {
+				//todo 更改status
+				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "running"})
+				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
+				r.Update(ctx, hook)
+				if err != nil {
+					klog.Error(err, "Failed to update Hook")
+					return ctrl.Result{}, err
+				}
+				klog.Info(hook)
+				klog.Info("Creating a new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
+				err = r.Create(ctx, job)
+				if err != nil {
+					klog.Error(err, "Failed to create new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
+					return ctrl.Result{}, err
+				}
+				//todo 启动 线程check job状态
+				break
+			} else {
+				//todo 更改status
+				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
+				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "no need push"})
+				r.Update(ctx, hook)
+				if err != nil {
+					klog.Error(err, "Failed to update Hook")
+					return ctrl.Result{}, err
+				}
+				klog.Info(hook)
+				break
+			}
+		}
+	}
 
+	// deploy hook Deployment
 	foundDeployment := &v1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: "controltower-operator-hook-server", Namespace: "controltower-operator-system"}, foundDeployment)
 	if err != nil && errors.IsNotFound(err) {
@@ -126,7 +168,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 				},
 				Spec: v12.PodSpec{
 					Containers: []v12.Container{{
-						Image: "lilqcn/hook:0.0.4.1",
+						Image: "lilqcn/hook:0.0.4",
 						Name:  "hook-server",
 						Ports: []v12.ContainerPort{{
 							ContainerPort: 8080,
@@ -141,9 +183,69 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 			},
 		},
 	}
-	// Set Memcached instance as the owner and controller
+	// Set Hook instance as the owner and controller
 	ctrl.SetControllerReference(h, dep, r.Scheme)
 	return dep
+}
+
+func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hook) *v13.Job {
+	for _, item := range hook.Spec.Hooks {
+		if event.GitRepository == item.GitRepository {
+			for _, branch := range item.Branches {
+				if branch == event.Branch {
+					klog.Info("need to deploy buildImage job")
+					uuidD := uuid.New().String()[0:8]
+					size1 := int32(1)
+					size5 := int32(5)
+					tr := true
+					job := &v13.Job{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      hook.Name + "-buildimagejob" + "-" + uuidD,
+							Namespace: "controltower-operator-system",
+						},
+						Spec: v13.JobSpec{
+							Completions:  &size1,
+							Parallelism:  &size1,
+							BackoffLimit: &size5,
+							Template: v12.PodTemplateSpec{
+								Spec: v12.PodSpec{
+									RestartPolicy: v12.RestartPolicy("OnFailure"),
+									Volumes: []v12.Volume{{
+										Name:         "lifecycle",
+										VolumeSource: v12.VolumeSource{EmptyDir: &v12.EmptyDirVolumeSource{}},
+									}},
+									Containers: []v12.Container{{
+										Image:           "lilqcn/builder:0.0.4-dind",
+										Name:            "dind",
+										Env:             []v12.EnvVar{{Name: "DOCKER_TLS_CERTDIR", Value: ""}},
+										SecurityContext: &v12.SecurityContext{Privileged: &tr},
+										VolumeMounts:    []v12.VolumeMount{{Name: "lifecycle", MountPath: "/lifecycle"}},
+									}, {
+										Image: "lilqcn/builder:0.0.4",
+										Name:  "builder",
+										Env: []v12.EnvVar{
+											{Name: "DOCKER_HOST", Value: "tcp://localhost:2375"},
+											{Name: "REPO", Value: item.GitRepository},
+											{Name: "BRANCH", Value: event.Branch},
+											{Name: "DOCKERFILE", Value: item.Dockerfile},
+											{Name: "IMAGE", Value: item.ImageRepository + ":" + time.Now().Format("20060102-1504")},
+											{Name: "USER", Value: item.ImageRepoUser},
+											{Name: "PASSWORD", Value: item.ImageRepoPassword},
+										},
+										VolumeMounts: []v12.VolumeMount{{Name: "lifecycle", MountPath: "/lifecycle"}},
+									}},
+								},
+							},
+						},
+					}
+					// Set Hook instance as the owner and controller
+					ctrl.SetControllerReference(hook, job, r.Scheme)
+					return job
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func labelsForHook(name string) map[string]string {
