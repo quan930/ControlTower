@@ -1,9 +1,9 @@
 package main
 
 import (
-	"builder/internal/docker"
-	"builder/internal/git"
 	"github.com/docker/docker/client"
+	"github.com/quan930/ControlTower/builder/pkg/docker"
+	"github.com/quan930/ControlTower/builder/pkg/git"
 	"k8s.io/klog/v2"
 	"os"
 )

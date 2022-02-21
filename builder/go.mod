@@ -1,4 +1,4 @@
-module builder
+module github.com/quan930/ControlTower/builder
 
 go 1.17
 
