@@ -13,42 +13,49 @@ import (
 	"os"
 )
 
-func BuildImage(cli *client.Client, dockerfilePath string, filePath string, imageName string) {
+func BuildImage(cli *client.Client, dockerfilePath string, filePath string, imageName string) error {
 	imageBuildResponse, err := cli.ImageBuild(context.Background(), getContext(filePath), types.ImageBuildOptions{
 		Dockerfile: dockerfilePath,
 		Tags:       []string{imageName},
 	})
 	if err != nil {
-		klog.Fatal(err)
+		klog.Error(err)
+		return err
 	}
 	defer imageBuildResponse.Body.Close()
 	_, err = io.Copy(os.Stdout, imageBuildResponse.Body)
 	if err != nil {
-		klog.Fatal(err, " :unable to read image build response")
+		klog.Error(err, " :unable to read image build response")
+		return err
 	}
+	return nil
 }
 
-func PushImage(cli *client.Client, registryUser string, registryPassword string, image string) {
+func PushImage(cli *client.Client, registryUser string, registryPassword string, image string) error {
 	authConfig := types.AuthConfig{
 		Username: registryUser,
 		Password: registryPassword,
 	}
 	encodedJSON, err := json.Marshal(authConfig)
 	if err != nil {
-		klog.Fatal(err)
+		klog.Error(err)
+		return err
 	}
 	klog.Infof("Push docker image registry: %v %v", registryUser, registryPassword)
 
 	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 	out, err := cli.ImagePush(context.TODO(), image, types.ImagePushOptions{RegistryAuth: authStr})
 	if err != nil {
-		klog.Fatal(err)
+		klog.Error(err)
+		return err
 	}
 	defer out.Close()
 	_, err = io.Copy(os.Stdout, out)
 	if err != nil {
-		klog.Fatal(err, " :unable to read image build response")
+		klog.Error(err, " :unable to read image build response")
+		return err
 	}
+	return nil
 }
 
 func getContext(filePath string) io.Reader {
