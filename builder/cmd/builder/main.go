@@ -28,8 +28,11 @@ func main() {
 	repoURL, branch, dockerfilePath, image, username, password := parseENV()
 	klog.Info("repo:", repoURL, "\nbranch:", branch, "\ndockerfilePath:", dockerfilePath, "\nimage", image, "\nuser", username, "\npassword", password)
 
-	repo := git.Clone(repoURL, "./temp")
-	err := git.Checkout(repo, branch)
+	repo,err := git.Clone(repoURL, "./temp")
+	if err != nil {
+		klog.Fatal(err)
+	}
+	err = git.Checkout(repo, branch)
 	if err != nil {
 		klog.Fatal(err)
 	}
@@ -39,8 +42,14 @@ func main() {
 		klog.Fatal(err)
 	}
 
-	docker.BuildImage(cli, dockerfilePath, "./temp", image)
-	docker.PushImage(cli, username, password, image)
+	err = docker.BuildImage(cli, dockerfilePath, "./temp", image)
+	if err != nil {
+		klog.Fatal(err)
+	}
+	err = docker.PushImage(cli, username, password, image)
+	if err != nil {
+		klog.Fatal(err)
+	}
 
 	f, err := os.Create("/lifecycle/main-terminated")
 	defer f.Close()
