@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func Clone(gitUrl string, workPath string) *git.Repository {
+func Clone(gitUrl string, workPath string) (*git.Repository,error) {
 	klog.Info("git clone ", gitUrl)
 
 	repository, err := git.PlainClone(workPath, false, &git.CloneOptions{
@@ -17,10 +17,10 @@ func Clone(gitUrl string, workPath string) *git.Repository {
 		Progress: os.Stdout,
 	})
 	if err != nil {
-		klog.Fatal(err)
-		return nil
+		klog.Error(err)
+		return nil,err
 	}
-	return repository
+	return repository,nil
 }
 
 func Checkout(repo *git.Repository, branchName string) error {
@@ -29,12 +29,14 @@ func Checkout(repo *git.Repository, branchName string) error {
 		RefSpecs: []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
 	})
 	if err != nil {
-		klog.Fatal(err)
+		klog.Error(err)
+		return err
 	}
 	klog.Info("git checkout ", branchName)
 	wt, err := repo.Worktree()
 	if err != nil {
-		klog.Fatal(err)
+		klog.Error(err)
+		return err
 	}
 	return wt.Checkout(&git.CheckoutOptions{
 		Branch: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branchName)),
