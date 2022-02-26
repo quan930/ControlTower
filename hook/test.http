@@ -9,3 +9,7 @@ GET http://127.0.0.1:3000/api/v1/hook/github
 Accept: application/json
 
 ###
+POST https://smee.io/xzMYO1EMlJciCLhw
+Content-Type: application/json
+
+{"name": "Spring in Action", "price": 1.00, "author": "Craig Walls"}

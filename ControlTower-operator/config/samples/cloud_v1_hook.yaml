@@ -7,11 +7,11 @@ spec:
       - git_repository: https://github.com/lianglitest/testimage
         branches:
           - main
-        image_build: true
         image_repository: lilqcn/testimage
-        update_image: true
         dockerfile: Dockerfile
-        image_repo_user: lilqcn
-        image_repo_password: daquan123456
+        image_repo_user: xxxxx
+        image_repo_password: xxxxxx
   git_events: []
   image_events: []
+  git_event_history: []
+  image_event_history: []
