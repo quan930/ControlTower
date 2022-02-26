@@ -25,15 +25,15 @@ import (
 
 // HookSpec defines the desired state of Hook
 type HookSpec struct {
-	Hooks       []HookItem   `json:"hooks"`
-	GitEvents   []GitEvent   `json:"git_events"`
-	ImageEvents []ImageEvent `json:"image_events"`
+	Hooks             []HookItem        `json:"hooks"`
+	GitEvents         []GitEvent        `json:"git_events"`
+	ImageEvents       []ImageEvent      `json:"image_events"`
+	GitEventHistory   []GitEventHistory `json:"git_event_history"`
+	ImageEventHistory []ImageEvent      `json:"image_event_history"`
 }
 
 // HookStatus defines the observed state of Hook
 type HookStatus struct {
-	GitEventHistory   []GitEventHistory `json:"git_event_history"`
-	ImageEventHistory []ImageEvent      `json:"image_event_history"`
 }
 
 //+kubebuilder:object:root=true

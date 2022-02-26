@@ -81,8 +81,7 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			//event.GitRepository
 			job := r.checkGitEvent(event, hook)
 			if job != nil {
-				//todo 更改status
-				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "running"})
+				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "running"})
 				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
 				r.Update(ctx, hook)
 				if err != nil {
@@ -99,9 +98,8 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 				//todo 启动 线程check job状态
 				break
 			} else {
-				//todo 更改status
 				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
-				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "no need push"})
+				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "no need push"})
 				r.Update(ctx, hook)
 				if err != nil {
 					klog.Error(err, "Failed to update Hook")
