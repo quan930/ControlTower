@@ -75,13 +75,13 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 	klog.Info("hook:", hook)
-	//判断是否有event
+	//判断是否有git event
 	if len(hook.Spec.GitEvents) > 0 {
 		for i, event := range hook.Spec.GitEvents {
 			//event.GitRepository
-			job := r.checkGitEvent(event, hook)
+			job, imagename := r.checkGitEvent(event, hook)
 			if job != nil {
-				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "running"})
+				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "running", BuildImageJob: job.Name, ImageName: *imagename})
 				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
 				r.Update(ctx, hook)
 				if err != nil {
@@ -110,6 +110,8 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			}
 		}
 	}
+	//判断是否有image event
+	//todo 判断是否有image event
 
 	// deploy hook Deployment
 	foundDeployment := &v1.Deployment{}
@@ -173,7 +175,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 							Name:          "hook",
 						}},
 					}, {
-						Image: "lilqcn/smee:0.0.2",
+						Image: "lilqcn/smee:0.0.4",
 						Name:  "smee",
 					}},
 					ServiceAccountName: "controltower-operator-controller-manager",
@@ -186,12 +188,14 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 	return dep
 }
 
-func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hook) *v13.Job {
+//todo 返回image name
+func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hook) (*v13.Job, *string) {
 	for _, item := range hook.Spec.Hooks {
 		if event.GitRepository == item.GitRepository {
 			for _, branch := range item.Branches {
 				if branch == event.Branch {
 					klog.Info("need to deploy buildImage job")
+					imageName := item.ImageRepository + ":" + time.Now().Format("20060102-1504")
 					size1 := int32(1)
 					size5 := int32(5)
 					tr := true
@@ -225,7 +229,7 @@ func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hoo
 											{Name: "REPO", Value: item.GitRepository},
 											{Name: "BRANCH", Value: event.Branch},
 											{Name: "DOCKERFILE", Value: item.Dockerfile},
-											{Name: "IMAGE", Value: item.ImageRepository + ":" + time.Now().Format("20060102-1504")},
+											{Name: "IMAGE", Value: imageName},
 											{Name: "USER", Value: item.ImageRepoUser},
 											{Name: "PASSWORD", Value: item.ImageRepoPassword},
 										},
@@ -237,12 +241,12 @@ func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hoo
 					}
 					// Set Hook instance as the owner and controller
 					ctrl.SetControllerReference(hook, job, r.Scheme)
-					return job
+					return job, &imageName
 				}
 			}
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func labelsForHook(name string) map[string]string {

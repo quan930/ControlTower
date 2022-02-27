@@ -1,8 +1,12 @@
-FROM node:16.14.0
+FROM node:16.14.0 as build
 
 WORKDIR /usr/src/app
 COPY package*.json ./
+COPY main.js ./
 
 RUN npm install
-COPY . .
-CMD [ "node", "main.js" ]
+
+FROM gcr.io/distroless/nodejs
+COPY --from=build /usr/src/app /
+EXPOSE 8080
+CMD ["main.js"]
