@@ -71,6 +71,7 @@ func (c GithubCon) DockerhubHook(request *restful.Request, response *restful.Res
 		if err != nil {
 			klog.Info(err)
 			response.WriteEntity(pojo.NewResponse(500, "update error", nil).Body)
+			return
 		}
 		hook := containDockerHub(buildPayload.Repository.RepoName,hookList)
 		if hook == nil {
