@@ -61,7 +61,7 @@ func init() {
 	SchemeBuilder.Register(&Hook{}, &HookList{})
 }
 
-//HookItem todo 校验
+//HookItem HookItem
 type HookItem struct {
 	GitRepository     string   `json:"git_repository"`
 	Branches          []string `json:"branches"`
@@ -71,7 +71,7 @@ type HookItem struct {
 	ImageRepoPassword string   `json:"image_repo_password"`
 }
 
-//GitEvent todo 校验
+//GitEvent git event
 type GitEvent struct {
 	GitRepository string `json:"git_repository"`
 	Branch        string `json:"branch"`
@@ -87,12 +87,13 @@ type GitEventHistory struct {
 	ImageName     string `json:"image_name"`
 }
 
-//ImageEvent todo 校验
+//ImageEvent Image Event
 type ImageEvent struct {
 	ImageRepository string `json:"image_repository"`
 	ImageTag        string `json:"image_tag"`
 }
 
+//ImageEventHistory Image Event History
 type ImageEventHistory struct {
 	ImageRepository string `json:"image_repository"`
 	ImageTag        string `json:"image_tag"`
