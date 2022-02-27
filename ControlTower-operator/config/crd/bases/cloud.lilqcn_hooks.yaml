@@ -63,7 +63,7 @@ spec:
                 type: array
               git_events:
                 items:
-                  description: GitEvent todo 校验
+                  description: GitEvent git event
                   properties:
                     branch:
                       type: string
@@ -76,7 +76,7 @@ spec:
                 type: array
               hooks:
                 items:
-                  description: HookItem todo 校验
+                  description: HookItem HookItem
                   properties:
                     branches:
                       items:
@@ -103,6 +103,7 @@ spec:
                 type: array
               image_event_history:
                 items:
+                  description: ImageEventHistory Image Event History
                   properties:
                     image_repository:
                       type: string
@@ -115,7 +116,7 @@ spec:
                 type: array
               image_events:
                 items:
-                  description: ImageEvent todo 校验
+                  description: ImageEvent Image Event
                   properties:
                     image_repository:
                       type: string

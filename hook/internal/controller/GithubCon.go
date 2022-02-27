@@ -31,8 +31,13 @@ func (c GithubCon) GithubHook(request *restful.Request, response *restful.Respon
 		klog.Info(pushPayload.Repository.URL)
 		klog.Info(pushPayload.Ref)
 		hookList, err := k8sClientService.ListHook()
+		if err != nil {
+			klog.Info(err)
+			response.WriteEntity(pojo.NewResponse(500, "update error", nil).Body)
+			return
+		}
 		//klog.Info(hookList)
-		hook := contain(pushPayload.Repository.URL, hookList)
+		hook := containGithub(pushPayload.Repository.URL, hookList)
 		if hook == nil {
 			response.WriteEntity(pojo.NewResponse(500, "webhook error", nil).Body)
 		} else {
@@ -59,17 +64,49 @@ func (c GithubCon) DockerhubHook(request *restful.Request, response *restful.Res
 		klog.Warning(err)
 		response.WriteEntity(pojo.NewResponse(500, "read entity error", nil).Body)
 	} else {
-		klog.Info(buildPayload)
+		//klog.Info(buildPayload)
 		klog.Info(buildPayload.PushData.Tag)
 		klog.Info(buildPayload.Repository.RepoName)
-		response.WriteEntity(pojo.NewResponse(200, "successful", nil).Body)
+		hookList, err := k8sClientService.ListHook()
+		if err != nil {
+			klog.Info(err)
+			response.WriteEntity(pojo.NewResponse(500, "update error", nil).Body)
+		}
+		hook := containDockerHub(buildPayload.Repository.RepoName,hookList)
+		if hook == nil {
+			response.WriteEntity(pojo.NewResponse(500, "webhook error", nil).Body)
+		}else {
+			hook.Spec.ImageEvents = append(hook.Spec.ImageEvents, v1.ImageEvent{
+				ImageRepository: buildPayload.Repository.RepoName,
+				ImageTag: buildPayload.PushData.Tag,
+			})
+			klog.Info("name:" + hook.ObjectMeta.Name + "\tnamespace:" + hook.ObjectMeta.Namespace)
+			err = k8sClientService.UpdateHook(hook)
+			if err != nil {
+				klog.Info(err)
+				response.WriteEntity(pojo.NewResponse(500, "update error", nil).Body)
+			} else {
+				response.WriteEntity(pojo.NewResponse(200, "successful", nil).Body)
+			}
+		}
 	}
 }
 
-func contain(url string, hookList *v1.HookList) *v1.Hook {
+func containGithub(url string, hookList *v1.HookList) *v1.Hook {
 	for _, item := range hookList.Items {
 		for _, hook := range item.Spec.Hooks {
 			if hook.GitRepository == url {
+				return &item
+			}
+		}
+	}
+	return nil
+}
+
+func containDockerHub(repoName string, hookList *v1.HookList) *v1.Hook {
+	for _, item := range hookList.Items {
+		for _, hook := range item.Spec.Hooks {
+			if hook.ImageRepository == repoName {
 				return &item
 			}
 		}
