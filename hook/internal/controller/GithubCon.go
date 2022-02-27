@@ -52,6 +52,20 @@ func (c GithubCon) GithubHook(request *restful.Request, response *restful.Respon
 	}
 }
 
+func (c GithubCon) DockerhubHook(request *restful.Request, response *restful.Response) {
+	buildPayload := new(pojo.BuildPayload)
+	err := request.ReadEntity(&buildPayload)
+	if err != nil {
+		klog.Warning(err)
+		response.WriteEntity(pojo.NewResponse(500, "read entity error", nil).Body)
+	} else {
+		klog.Info(buildPayload)
+		klog.Info(buildPayload.PushData.Tag)
+		klog.Info(buildPayload.Repository.RepoName)
+		response.WriteEntity(pojo.NewResponse(200, "successful", nil).Body)
+	}
+}
+
 func contain(url string, hookList *v1.HookList) *v1.Hook {
 	for _, item := range hookList.Items {
 		for _, hook := range item.Spec.Hooks {

@@ -42,16 +42,22 @@ spec:
                   properties:
                     branch:
                       type: string
+                    build_image_job:
+                      type: string
                     date_time:
                       type: string
                     git_repository:
+                      type: string
+                    image_name:
                       type: string
                     status:
                       type: string
                   required:
                   - branch
+                  - build_image_job
                   - date_time
                   - git_repository
+                  - image_name
                   - status
                   type: object
                 type: array
@@ -97,12 +103,14 @@ spec:
                 type: array
               image_event_history:
                 items:
-                  description: ImageEvent todo 校验
                   properties:
                     image_repository:
                       type: string
+                    image_tag:
+                      type: string
                   required:
                   - image_repository
+                  - image_tag
                   type: object
                 type: array
               image_events:
@@ -111,8 +119,11 @@ spec:
                   properties:
                     image_repository:
                       type: string
+                    image_tag:
+                      type: string
                   required:
                   - image_repository
+                  - image_tag
                   type: object
                 type: array
             required:

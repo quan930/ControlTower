@@ -25,11 +25,11 @@ import (
 
 // HookSpec defines the desired state of Hook
 type HookSpec struct {
-	Hooks             []HookItem        `json:"hooks"`
-	GitEvents         []GitEvent        `json:"git_events"`
-	ImageEvents       []ImageEvent      `json:"image_events"`
-	GitEventHistory   []GitEventHistory `json:"git_event_history"`
-	ImageEventHistory []ImageEvent      `json:"image_event_history"`
+	Hooks             []HookItem          `json:"hooks"`
+	GitEvents         []GitEvent          `json:"git_events"`
+	ImageEvents       []ImageEvent        `json:"image_events"`
+	GitEventHistory   []GitEventHistory   `json:"git_event_history"`
+	ImageEventHistory []ImageEventHistory `json:"image_event_history"`
 }
 
 // HookStatus defines the observed state of Hook
@@ -83,9 +83,17 @@ type GitEventHistory struct {
 	Branch        string `json:"branch"`
 	DateTime      string `json:"date_time"`
 	Status        string `json:"status"`
+	BuildImageJob string `json:"build_image_job"`
+	ImageName     string `json:"image_name"`
 }
 
 //ImageEvent todo 校验
 type ImageEvent struct {
 	ImageRepository string `json:"image_repository"`
+	ImageTag        string `json:"image_tag"`
+}
+
+type ImageEventHistory struct {
+	ImageRepository string `json:"image_repository"`
+	ImageTag        string `json:"image_tag"`
 }

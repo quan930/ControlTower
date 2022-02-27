@@ -31,6 +31,7 @@ func Register(container *restful.Container) {
 	ws.Filter(NCSACommonLogFormatLogger())
 
 	ws.Route(ws.POST("/github").To(githubCon.GithubHook))
+	ws.Route(ws.POST("/dockerhub").To(githubCon.DockerhubHook))
 
 	container.Add(ws)
 }
