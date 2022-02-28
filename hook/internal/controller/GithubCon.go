@@ -73,13 +73,13 @@ func (c GithubCon) DockerhubHook(request *restful.Request, response *restful.Res
 			response.WriteEntity(pojo.NewResponse(500, "update error", nil).Body)
 			return
 		}
-		hook := containDockerHub(buildPayload.Repository.RepoName,hookList)
+		hook := containDockerHub(buildPayload.Repository.RepoName, hookList)
 		if hook == nil {
 			response.WriteEntity(pojo.NewResponse(500, "webhook error", nil).Body)
-		}else {
+		} else {
 			hook.Spec.ImageEvents = append(hook.Spec.ImageEvents, v1.ImageEvent{
 				ImageRepository: buildPayload.Repository.RepoName,
-				ImageTag: buildPayload.PushData.Tag,
+				ImageTag:        buildPayload.PushData.Tag,
 			})
 			klog.Info("name:" + hook.ObjectMeta.Name + "\tnamespace:" + hook.ObjectMeta.Namespace)
 			err = k8sClientService.UpdateHook(hook)

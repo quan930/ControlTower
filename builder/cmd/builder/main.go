@@ -28,7 +28,7 @@ func main() {
 	repoURL, branch, dockerfilePath, image, username, password := parseENV()
 	klog.Info("repo:", repoURL, "\nbranch:", branch, "\ndockerfilePath:", dockerfilePath, "\nimage", image, "\nuser", username, "\npassword", password)
 
-	repo,err := git.Clone(repoURL, "./temp")
+	repo, err := git.Clone(repoURL, "./temp")
 	if err != nil {
 		klog.Fatal(err)
 	}
