@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func Clone(gitUrl string, workPath string) (*git.Repository,error) {
+func Clone(gitUrl string, workPath string) (*git.Repository, error) {
 	klog.Info("git clone ", gitUrl)
 
 	repository, err := git.PlainClone(workPath, false, &git.CloneOptions{
@@ -18,9 +18,9 @@ func Clone(gitUrl string, workPath string) (*git.Repository,error) {
 	})
 	if err != nil {
 		klog.Error(err)
-		return nil,err
+		return nil, err
 	}
-	return repository,nil
+	return repository, nil
 }
 
 func Checkout(repo *git.Repository, branchName string) error {

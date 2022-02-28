@@ -55,7 +55,7 @@ type HookReconciler struct {
 //+kubebuilder:rbac:groups=cloud.lilqcn,resources=hooks/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=*,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	klog.Info("========== start ===============>")
 	// 获取 MyBook 实例
@@ -77,41 +77,45 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	klog.Info("hook:", hook)
 	//判断是否有git event
 	if len(hook.Spec.GitEvents) > 0 {
+		klog.Info("GitEvents > 0")
 		for i, event := range hook.Spec.GitEvents {
-			//event.GitRepository
 			job, imagename := r.checkGitEvent(event, hook)
 			if job != nil {
-				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "running", BuildImageJob: job.Name, ImageName: *imagename})
-				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
-				r.Update(ctx, hook)
-				if err != nil {
-					klog.Error(err, "Failed to update Hook")
-					return ctrl.Result{}, err
-				}
-				klog.Info(hook)
 				klog.Info("Creating a new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
 				err = r.Create(ctx, job)
 				if err != nil {
 					klog.Error(err, "Failed to create new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
 					return ctrl.Result{}, err
 				}
-				//todo 启动 线程check job状态
-				break
+				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "Running", BuildImageJob: job.Name, ImageName: *imagename})
+				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
 			} else {
 				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
 				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "no need push"})
-				r.Update(ctx, hook)
-				if err != nil {
-					klog.Error(err, "Failed to update Hook")
-					return ctrl.Result{}, err
-				}
-				klog.Info(hook)
-				break
 			}
+			err = r.Update(ctx, hook)
+			if err != nil {
+				klog.Error(err, "Failed to update Hook")
+				return ctrl.Result{}, err
+			}
+			klog.Info(hook)
+			return ctrl.Result{}, nil
 		}
 	}
 	//判断是否有image event
 	//todo 判断是否有image event
+	if len(hook.Spec.ImageEvents) > 0 {
+		klog.Info("ImageEvents > 0")
+		if r.checkJob(hook) {
+			err = r.Update(ctx, hook)
+			if err != nil {
+				klog.Error(err, "Failed to update Hook")
+				return ctrl.Result{}, err
+			}
+			klog.Info(hook)
+			return ctrl.Result{}, nil
+		}
+	}
 
 	// deploy hook Deployment
 	foundDeployment := &v1.Deployment{}
@@ -188,7 +192,7 @@ func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployme
 	return dep
 }
 
-//todo 返回image name
+//checkGitEvent 返回job image name
 func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hook) (*v13.Job, *string) {
 	for _, item := range hook.Spec.Hooks {
 		if event.GitRepository == item.GitRepository {
@@ -251,4 +255,18 @@ func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hoo
 
 func labelsForHook(name string) map[string]string {
 	return map[string]string{"app": "controltower", "controltower_cr": name}
+}
+
+//checkJob 检验image job
+func (r *HookReconciler) checkJob(hook *cloudv1.Hook) bool {
+	for _, event := range hook.Spec.ImageEvents {
+		image := event.ImageRepository + ":" + event.ImageTag
+		for i, history := range hook.Spec.GitEventHistory {
+			if history.ImageName == image {
+				hook.Spec.GitEventHistory[i].Status = "Completed"
+				return true
+			}
+		}
+	}
+	return false
 }
