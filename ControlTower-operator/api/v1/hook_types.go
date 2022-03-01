@@ -69,6 +69,14 @@ type HookItem struct {
 	Dockerfile        string   `json:"dockerfile"`
 	ImageRepoUser     string   `json:"image_repo_user"`
 	ImageRepoPassword string   `json:"image_repo_password"`
+	Deploys           []Deploy `json:"deploys"`
+}
+
+//Deploy deployment config
+type Deploy struct {
+	ContainerName string `json:"container_name"`
+	DeployName    string `json:"deploy_name"`
+	Namespace     string `json:"namespace"`
 }
 
 //GitEvent git event
@@ -97,4 +105,5 @@ type ImageEvent struct {
 type ImageEventHistory struct {
 	ImageRepository string `json:"image_repository"`
 	ImageTag        string `json:"image_tag"`
+	DateTime        string `json:"date_time"`
 }

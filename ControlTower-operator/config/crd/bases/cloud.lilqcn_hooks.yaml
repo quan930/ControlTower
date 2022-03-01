@@ -82,6 +82,21 @@ spec:
                       items:
                         type: string
                       type: array
+                    deploys:
+                      items:
+                        properties:
+                          container_name:
+                            type: string
+                          deploy_name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - container_name
+                        - deploy_name
+                        - namespace
+                        type: object
+                      type: array
                     dockerfile:
                       type: string
                     git_repository:
@@ -94,6 +109,7 @@ spec:
                       type: string
                   required:
                   - branches
+                  - deploys
                   - dockerfile
                   - git_repository
                   - image_repo_password
@@ -105,11 +121,14 @@ spec:
                 items:
                   description: ImageEventHistory Image Event History
                   properties:
+                    date_time:
+                      type: string
                     image_repository:
                       type: string
                     image_tag:
                       type: string
                   required:
+                  - date_time
                   - image_repository
                   - image_tag
                   type: object
