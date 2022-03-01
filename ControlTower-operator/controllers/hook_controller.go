@@ -263,7 +263,7 @@ func (r *HookReconciler) checkJob(hook *cloudv1.Hook) bool {
 		image := event.ImageRepository + ":" + event.ImageTag
 		for i, history := range hook.Spec.GitEventHistory {
 			if history.ImageName == image {
-				hook.Spec.GitEventHistory[i].Status = "Completed"
+				hook.Spec.GitEventHistory[i].Status = "Successful" // Completed
 				return true
 			}
 		}
