@@ -9,7 +9,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 )
 
 type K8sClientServiceImpl struct {
@@ -46,8 +45,7 @@ func (i K8sClientServiceImpl) UpdateHook(hook *v1.Hook) error {
 	var m map[string]interface{}
 	_ = json.Unmarshal(b, &m)
 	obj := &unstructured.Unstructured{Object: m}
-	utd, err := client.Resource(getGVR("cloud.lilqcn", "v1", "hooks")).Namespace(hook.GetNamespace()).Update(ctx, obj, metav1.UpdateOptions{})
-	klog.Info(utd)
+	_, err := client.Resource(getGVR("cloud.lilqcn", "v1", "hooks")).Namespace(hook.GetNamespace()).UpdateStatus(ctx, obj, metav1.UpdateOptions{})
 	return err
 }
 
