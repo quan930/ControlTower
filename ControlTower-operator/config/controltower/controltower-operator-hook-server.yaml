@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controltower-operator-hook-server
+  namespace: system
+  labels:
+    control-plane: controller-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+        - name: hook-server
+          image: lilqcn/hook:0.0.4
+          ports:
+            - containerPort: 8080
+              name: hook
+        - name: smee
+          image: lilqcn/smee:0.0.4
+      serviceAccountName: controller-manager

@@ -152,27 +152,6 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			return ctrl.Result{}, nil
 		}
 	}
-
-	// deploy hook Deployment
-	foundDeployment := &v1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: "controltower-operator-hook-server", Namespace: "controltower-operator-system"}, foundDeployment)
-	if err != nil && errors.IsNotFound(err) {
-		klog.Info("deployment ........ init =>")
-		// Define a new deployment
-		dep := r.deploymentForControlTower(hook)
-		klog.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.Create(ctx, dep)
-		if err != nil {
-			klog.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-			return ctrl.Result{}, err
-		}
-		// Deployment created successfully - return and requeue
-		klog.Info("deployment ........ finish =>")
-		return ctrl.Result{Requeue: true}, nil
-	} else if err != nil {
-		klog.Error(err, "Failed to get Deployment")
-		return ctrl.Result{}, err
-	}
 	return ctrl.Result{}, nil
 }
 
@@ -185,47 +164,6 @@ func (r *HookReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&v1.Deployment{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: 1}).
 		Complete(r)
-}
-
-//deploymentForControlTower 部署服务
-func (r *HookReconciler) deploymentForControlTower(h *cloudv1.Hook) *v1.Deployment {
-	ls := labelsForHook(h.Name)
-	replicas := int32(1)
-
-	dep := &v1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "controltower-operator-hook-server",
-			Namespace: "controltower-operator-system",
-		},
-		Spec: v1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: ls,
-			},
-			Template: v12.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: ls,
-				},
-				Spec: v12.PodSpec{
-					Containers: []v12.Container{{
-						Image: "lilqcn/hook:0.0.4",
-						Name:  "hook-server",
-						Ports: []v12.ContainerPort{{
-							ContainerPort: 8080,
-							Name:          "hook",
-						}},
-					}, {
-						Image: "lilqcn/smee:0.0.4",
-						Name:  "smee",
-					}},
-					ServiceAccountName: "controltower-operator-controller-manager",
-				},
-			},
-		},
-	}
-	// Set Hook instance as the owner and controller
-	ctrl.SetControllerReference(h, dep, r.Scheme)
-	return dep
 }
 
 //checkGitEvent 返回job image name
@@ -287,10 +225,6 @@ func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hoo
 		}
 	}
 	return nil, nil
-}
-
-func labelsForHook(name string) map[string]string {
-	return map[string]string{"app": "controltower", "controltower_cr": name}
 }
 
 //checkJob 检验image job
