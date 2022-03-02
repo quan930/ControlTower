@@ -41,7 +41,7 @@ func (c GithubCon) GithubHook(request *restful.Request, response *restful.Respon
 		if hook == nil {
 			response.WriteEntity(pojo.NewResponse(500, "webhook error", nil).Body)
 		} else {
-			hook.Spec.GitEvents = append(hook.Spec.GitEvents, v1.GitEvent{
+			hook.Status.GitEvents = append(hook.Status.GitEvents, v1.GitEvent{
 				GitRepository: pushPayload.Repository.URL,
 				Branch:        pushPayload.Ref[strings.LastIndex(pushPayload.Ref, "/")+1:],
 			})
@@ -77,7 +77,7 @@ func (c GithubCon) DockerhubHook(request *restful.Request, response *restful.Res
 		if hook == nil {
 			response.WriteEntity(pojo.NewResponse(500, "webhook error", nil).Body)
 		} else {
-			hook.Spec.ImageEvents = append(hook.Spec.ImageEvents, v1.ImageEvent{
+			hook.Status.ImageEvents = append(hook.Status.ImageEvents, v1.ImageEvent{
 				ImageRepository: buildPayload.Repository.RepoName,
 				ImageTag:        buildPayload.PushData.Tag,
 			})
