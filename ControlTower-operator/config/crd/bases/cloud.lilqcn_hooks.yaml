@@ -170,22 +170,8 @@ spec:
                   - git_repository
                   type: object
                 type: array
-              image_events:
-                items:
-                  description: ImageEvent Image Event
-                  properties:
-                    image_repository:
-                      type: string
-                    image_tag:
-                      type: string
-                  required:
-                  - image_repository
-                  - image_tag
-                  type: object
-                type: array
             required:
             - git_events
-            - image_events
             type: object
         type: object
     served: true
