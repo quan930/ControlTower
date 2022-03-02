@@ -67,18 +67,17 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		if errors.IsNotFound(err) {
 			// 对象未找到
 			klog.Info("hook resource not found. Ignoring since object must be deleted")
-			//todo 删除绑定的 Deployment
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		klog.Error(err, "Failed to get MyBook")
+		klog.Error(err, "Failed to get Hook")
 		return ctrl.Result{}, err
 	}
 	klog.Info("hook:", hook)
 	//判断是否有git event
-	if len(hook.Spec.GitEvents) > 0 {
+	if len(hook.Status.GitEvents) > 0 {
 		klog.Info("GitEvents > 0")
-		for i, event := range hook.Spec.GitEvents {
+		for i, event := range hook.Status.GitEvents {
 			job, imagename := r.checkGitEvent(event, hook)
 			if job != nil {
 				klog.Info("Creating a new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
@@ -87,13 +86,13 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					klog.Error(err, "Failed to create new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
 					return ctrl.Result{}, err
 				}
-				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "Running", BuildImageJob: job.Name, ImageName: *imagename})
-				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
+				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "Running", BuildImageJob: job.Name, ImageName: *imagename})
+				hook.Status.GitEvents = append(hook.Status.GitEvents[:i], hook.Status.GitEvents[i+1:]...)
 			} else {
-				hook.Spec.GitEvents = append(hook.Spec.GitEvents[:i], hook.Spec.GitEvents[i+1:]...)
-				hook.Spec.GitEventHistory = append(hook.Spec.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "no need push"})
+				hook.Status.GitEvents = append(hook.Status.GitEvents[:i], hook.Status.GitEvents[i+1:]...)
+				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "no need push"})
 			}
-			err = r.Update(ctx, hook)
+			err = r.Status().Update(ctx, hook)
 			if err != nil {
 				klog.Error(err, "Failed to update Hook")
 				return ctrl.Result{}, err
@@ -104,9 +103,9 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	//判断是否有image event
 	//todo 判断是否有image event
-	if len(hook.Spec.ImageEvents) > 0 {
+	if len(hook.Status.ImageEvents) > 0 {
 		klog.Info("ImageEvents > 0")
-		for i, event := range hook.Spec.ImageEvents {
+		for i, event := range hook.Status.ImageEvents {
 			//todo get update deployment
 			deploys := getNeedUpdateDeployment(event, hook)
 			if len(*deploys) > 0 {
@@ -128,12 +127,12 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					}
 				}
 			}
-			hook.Spec.ImageEvents = append(hook.Spec.ImageEvents[:i], hook.Spec.ImageEvents[i+1:]...)
-			hook.Spec.ImageEventHistory = append(hook.Spec.ImageEventHistory, cloudv1.ImageEventHistory{ImageRepository: event.ImageRepository, ImageTag: event.ImageTag, DateTime: time.Now().Format("2006-01-02-15:04:05")})
+			hook.Status.ImageEvents = append(hook.Status.ImageEvents[:i], hook.Status.ImageEvents[i+1:]...)
+			hook.Status.ImageEventHistory = append(hook.Status.ImageEventHistory, cloudv1.ImageEventHistory{ImageRepository: event.ImageRepository, ImageTag: event.ImageTag, DateTime: time.Now().Format("2006-01-02-15:04:05")})
 			image := event.ImageRepository + ":" + event.ImageTag
-			for j, history := range hook.Spec.GitEventHistory {
+			for j, history := range hook.Status.GitEventHistory {
 				if history.ImageName == image {
-					hook.Spec.GitEventHistory[j].Status = "Successful" // Completed
+					hook.Status.GitEventHistory[j].Status = "Successful" // Completed
 					err = r.Update(ctx, hook)
 					if err != nil {
 						klog.Error(err, "Failed to update Hook")
@@ -143,7 +142,7 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					return ctrl.Result{}, nil
 				}
 			}
-			err = r.Update(ctx, hook)
+			err = r.Status().Update(ctx, hook)
 			if err != nil {
 				klog.Error(err, "Failed to update Hook")
 				return ctrl.Result{}, err

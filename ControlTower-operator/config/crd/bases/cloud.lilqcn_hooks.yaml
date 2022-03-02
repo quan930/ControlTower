@@ -36,6 +36,57 @@ spec:
           spec:
             description: HookSpec defines the desired state of Hook
             properties:
+              hooks:
+                items:
+                  description: HookItem HookItem
+                  properties:
+                    branches:
+                      items:
+                        type: string
+                      type: array
+                    deploys:
+                      items:
+                        description: Deploy deployment config
+                        properties:
+                          container_name:
+                            type: string
+                          deploy_name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - container_name
+                        - deploy_name
+                        - namespace
+                        type: object
+                      nullable: true
+                      type: array
+                    dockerfile:
+                      type: string
+                    git_repository:
+                      type: string
+                    image_repo_password:
+                      type: string
+                    image_repo_user:
+                      type: string
+                    image_repository:
+                      type: string
+                  required:
+                  - branches
+                  - deploys
+                  - dockerfile
+                  - git_repository
+                  - image_repo_password
+                  - image_repo_user
+                  - image_repository
+                  type: object
+                type: array
+            required:
+            - hooks
+            type: object
+          status:
+            description: HookStatus defines the observed state of Hook
+            properties:
               git_event_history:
                 items:
                   description: GitEventHistory git event history
@@ -60,6 +111,7 @@ spec:
                   - image_name
                   - status
                   type: object
+                nullable: true
                 type: array
               git_events:
                 items:
@@ -73,50 +125,7 @@ spec:
                   - branch
                   - git_repository
                   type: object
-                type: array
-              hooks:
-                items:
-                  description: HookItem HookItem
-                  properties:
-                    branches:
-                      items:
-                        type: string
-                      type: array
-                    deploys:
-                      items:
-                        description: Deploy deployment config
-                        properties:
-                          container_name:
-                            type: string
-                          deploy_name:
-                            type: string
-                          namespace:
-                            type: string
-                        required:
-                        - container_name
-                        - deploy_name
-                        - namespace
-                        type: object
-                      type: array
-                    dockerfile:
-                      type: string
-                    git_repository:
-                      type: string
-                    image_repo_password:
-                      type: string
-                    image_repo_user:
-                      type: string
-                    image_repository:
-                      type: string
-                  required:
-                  - branches
-                  - deploys
-                  - dockerfile
-                  - git_repository
-                  - image_repo_password
-                  - image_repo_user
-                  - image_repository
-                  type: object
+                nullable: true
                 type: array
               image_event_history:
                 items:
@@ -133,6 +142,7 @@ spec:
                   - image_repository
                   - image_tag
                   type: object
+                nullable: true
                 type: array
               image_events:
                 items:
@@ -146,47 +156,12 @@ spec:
                   - image_repository
                   - image_tag
                   type: object
+                nullable: true
                 type: array
             required:
             - git_event_history
             - git_events
-            - hooks
             - image_event_history
-            - image_events
-            type: object
-          status:
-            description: HookStatus defines the observed state of Hook
-            properties:
-              git_events:
-                items:
-                  description: GitEvent git event
-                  properties:
-                    branch:
-                      type: string
-                    git_repository:
-                      type: string
-                  required:
-                  - branch
-                  - git_repository
-                  type: object
-                nullable: true
-                type: array
-              image_events:
-                items:
-                  description: ImageEvent Image Event
-                  properties:
-                    image_repository:
-                      type: string
-                    image_tag:
-                      type: string
-                  required:
-                  - image_repository
-                  - image_tag
-                  type: object
-                nullable: true
-                type: array
-            required:
-            - git_events
             - image_events
             type: object
         type: object
