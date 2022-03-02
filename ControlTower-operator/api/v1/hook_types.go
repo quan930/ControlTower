@@ -34,7 +34,7 @@ type HookSpec struct {
 
 // HookStatus defines the observed state of Hook
 type HookStatus struct {
-	GitEvents         []GitEvent          `json:"git_events"`
+	GitEvents []GitEvent `json:"git_events"`
 }
 
 //+kubebuilder:object:root=true
