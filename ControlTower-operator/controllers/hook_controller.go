@@ -94,7 +94,7 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			}
 			err = r.Status().Update(ctx, hook)
 			if err != nil {
-				klog.Error(err, "Failed to update Hook")
+				klog.Error(err, "Failed to update Hook/Status")
 				return ctrl.Result{}, err
 			}
 			klog.Info(hook)
@@ -133,9 +133,9 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			for j, history := range hook.Status.GitEventHistory {
 				if history.ImageName == image {
 					hook.Status.GitEventHistory[j].Status = "Successful" // Completed
-					err = r.Update(ctx, hook)
+					err = r.Status().Update(ctx, hook)
 					if err != nil {
-						klog.Error(err, "Failed to update Hook")
+						klog.Error(err, "Failed to update Hook/status")
 						return ctrl.Result{}, err
 					}
 					klog.Info(hook)
