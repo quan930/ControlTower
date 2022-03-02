@@ -8,9 +8,10 @@
     `v1.15.0`
 ### todo
 + update hook status
-+ cr delete => delete deployment
 + check error job (hook + container)
 + build job (Socat)
++ crd smee (webhook url config)
++ workloads (type)
 
 ### doc
 + https://stackoverflow.com/questions/52768922/how-to-check-if-kubernetes-job-is-successful-or-failure-using-client-go-library
