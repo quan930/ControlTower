@@ -16,7 +16,3 @@ spec:
           deploy_name: controltower-test
           namespace: default
           type:
-  git_events: []
-  image_events: []
-  git_event_history: []
-  image_event_history: []

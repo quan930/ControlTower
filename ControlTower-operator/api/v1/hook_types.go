@@ -25,11 +25,7 @@ import (
 
 // HookSpec defines the desired state of Hook
 type HookSpec struct {
-	Hooks             []HookItem          `json:"hooks"`
-	GitEvents         []GitEvent          `json:"git_events"`
-	ImageEvents       []ImageEvent        `json:"image_events"`
-	GitEventHistory   []GitEventHistory   `json:"git_event_history"`
-	ImageEventHistory []ImageEventHistory `json:"image_event_history"`
+	Hooks []HookItem `json:"hooks"`
 }
 
 // HookStatus defines the observed state of Hook
@@ -38,6 +34,10 @@ type HookStatus struct {
 	GitEvents []GitEvent `json:"git_events"`
 	//+nullable
 	ImageEvents []ImageEvent `json:"image_events"`
+	//+nullable
+	GitEventHistory []GitEventHistory `json:"git_event_history"`
+	//+nullable
+	ImageEventHistory []ImageEventHistory `json:"image_event_history"`
 }
 
 //+kubebuilder:object:root=true
@@ -73,7 +73,8 @@ type HookItem struct {
 	Dockerfile        string   `json:"dockerfile"`
 	ImageRepoUser     string   `json:"image_repo_user"`
 	ImageRepoPassword string   `json:"image_repo_password"`
-	Deploys           []Deploy `json:"deploys"`
+	//+nullable
+	Deploys []Deploy `json:"deploys"`
 }
 
 //Deploy deployment config
