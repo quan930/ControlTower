@@ -4,13 +4,18 @@ metadata:
   name: hook-sample
 spec:
   hooks:
-      - git_repository: https://github.com/lianglitest/testimage
-        branches:
-          - main
-        image_repository: lilqcn/testimage
-        dockerfile: Dockerfile
-        image_repo_user: xxxxx
-        image_repo_password: xxxxxx
+    - git_repository: https://github.com/lianglitest/testimage
+      branches:
+        - main
+      image_repository: lilqcn/testimage
+      dockerfile: Dockerfile
+      image_repo_user: lilqcn
+      image_repo_password: daquan123456
+      deploys:
+        - container_name: testimage
+          deploy_name: controltower-test
+          namespace: default
+          type:
   git_events: []
   image_events: []
   git_event_history: []

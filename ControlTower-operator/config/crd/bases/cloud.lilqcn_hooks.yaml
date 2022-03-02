@@ -84,6 +84,7 @@ spec:
                       type: array
                     deploys:
                       items:
+                        description: Deploy deployment config
                         properties:
                           container_name:
                             type: string

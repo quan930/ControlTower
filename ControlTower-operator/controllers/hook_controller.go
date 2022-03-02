@@ -106,7 +106,43 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	//todo 判断是否有image event
 	if len(hook.Spec.ImageEvents) > 0 {
 		klog.Info("ImageEvents > 0")
-		if r.checkJob(hook) {
+		for i, event := range hook.Spec.ImageEvents {
+			//todo get update deployment
+			deploys := getNeedUpdateDeployment(event, hook)
+			if len(*deploys) > 0 {
+				for _, deploy := range *deploys {
+					foundDeployment := &v1.Deployment{}
+					err = r.Get(ctx, types.NamespacedName{Name: deploy.DeployName, Namespace: deploy.Namespace}, foundDeployment)
+					if err != nil && errors.IsNotFound(err) {
+						klog.Info("not found deployment")
+					}
+					containers := &foundDeployment.Spec.Template.Spec.Containers
+					for j, container := range *containers {
+						if container.Name == deploy.ContainerName {
+							foundDeployment.Spec.Template.Spec.Containers[j].Image = event.ImageRepository + ":" + event.ImageTag
+						}
+					}
+					err = r.Update(ctx, foundDeployment)
+					if err != nil {
+						klog.Error(err, "Failed to update Hook")
+					}
+				}
+			}
+			hook.Spec.ImageEvents = append(hook.Spec.ImageEvents[:i], hook.Spec.ImageEvents[i+1:]...)
+			hook.Spec.ImageEventHistory = append(hook.Spec.ImageEventHistory, cloudv1.ImageEventHistory{ImageRepository: event.ImageRepository, ImageTag: event.ImageTag, DateTime: time.Now().Format("2006-01-02-15:04:05")})
+			image := event.ImageRepository + ":" + event.ImageTag
+			for j, history := range hook.Spec.GitEventHistory {
+				if history.ImageName == image {
+					hook.Spec.GitEventHistory[j].Status = "Successful" // Completed
+					err = r.Update(ctx, hook)
+					if err != nil {
+						klog.Error(err, "Failed to update Hook")
+						return ctrl.Result{}, err
+					}
+					klog.Info(hook)
+					return ctrl.Result{}, nil
+				}
+			}
 			err = r.Update(ctx, hook)
 			if err != nil {
 				klog.Error(err, "Failed to update Hook")
@@ -258,15 +294,25 @@ func labelsForHook(name string) map[string]string {
 }
 
 //checkJob 检验image job
-func (r *HookReconciler) checkJob(hook *cloudv1.Hook) bool {
-	for _, event := range hook.Spec.ImageEvents {
-		image := event.ImageRepository + ":" + event.ImageTag
-		for i, history := range hook.Spec.GitEventHistory {
-			if history.ImageName == image {
-				hook.Spec.GitEventHistory[i].Status = "Successful" // Completed
-				return true
-			}
+//func (r *HookReconciler) checkJob(hook *cloudv1.Hook) bool {
+//	for _, event := range hook.Spec.ImageEvents {
+//		image := event.ImageRepository + ":" + event.ImageTag
+//		for i, history := range hook.Spec.GitEventHistory {
+//			if history.ImageName == image {
+//				hook.Spec.GitEventHistory[i].Status = "Successful" // Completed
+//				return true
+//			}
+//		}
+//	}
+//	return false
+//}
+
+func getNeedUpdateDeployment(imageEvent cloudv1.ImageEvent, hook *cloudv1.Hook) *[]cloudv1.Deploy {
+	var deploys []cloudv1.Deploy
+	for _, item := range hook.Spec.Hooks {
+		if item.ImageRepository == imageEvent.ImageRepository {
+			deploys = append(deploys, item.Deploys...)
 		}
 	}
-	return false
+	return &deploys
 }
