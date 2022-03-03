@@ -1,5 +1,5 @@
 #!/bin/sh
-sh /ter.sh &
+bash /server_dind.sh &
 set -eu
 
 _tls_ensure_private() {
