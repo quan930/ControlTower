@@ -18,10 +18,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/quan930/ControlTower/ControlTower-operator/pkg/service"
+	service2 "github.com/quan930/ControlTower/ControlTower-operator/controllers/service"
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -38,7 +37,7 @@ type HookReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-var hookService service.HookService
+var hookService service2.HookService
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -79,14 +78,10 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		for i, event := range hook.Status.GitEvents {
 			job, imagename := hookService.GetJobByCheckGitEvent(event, hook)
 			if job != nil {
-				err = ctrl.SetControllerReference(hook, job, r.Scheme)
-				if err != nil {
-					return ctrl.Result{}, err
-				}
-				klog.Info("Creating a new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
+				klog.Info("need to deploy buildImage job, Creating a new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
 				err = r.Create(ctx, job)
 				if err != nil {
-					klog.Error(err, "Failed to create new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
+					klog.Error(err, ", Failed to create new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
 					return ctrl.Result{}, err
 				}
 				hook.Status.GitEventHistory = append(hook.Status.GitEventHistory, cloudv1.GitEventHistory{GitRepository: event.GitRepository, Branch: event.Branch, DateTime: time.Now().Format("2006-01-02-15:04:05"), Status: "Running", BuildImageJob: job.Name, ImageName: *imagename})
@@ -104,31 +99,13 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		}
 	}
 	//判断是否有image event
-	//todo 判断是否有image event
 	if len(hook.Status.ImageEvents) > 0 {
 		klog.Info("ImageEvents > 0")
 		for i, event := range hook.Status.ImageEvents {
-			//todo get update deployment
-			deploys := getNeedUpdateDeployment(event, hook)
-			if len(*deploys) > 0 {
-				for _, deploy := range *deploys {
-					foundDeployment := &v1.Deployment{}
-					err = r.Get(ctx, types.NamespacedName{Name: deploy.DeployName, Namespace: deploy.Namespace}, foundDeployment)
-					if err != nil && errors.IsNotFound(err) {
-						klog.Info("not found deployment")
-					}
-					containers := &foundDeployment.Spec.Template.Spec.Containers
-					for j, container := range *containers {
-						if container.Name == deploy.ContainerName {
-							foundDeployment.Spec.Template.Spec.Containers[j].Image = event.ImageRepository + ":" + event.ImageTag
-						}
-					}
-					err = r.Update(ctx, foundDeployment)
-					if err != nil {
-						klog.Error(err, "Failed to update Hook")
-					}
-				}
-			}
+			//update deployment
+			hookService.UpdateDeployment(event, hook, r.Client)
+
+			//update hook/status
 			hook.Status.ImageEvents = append(hook.Status.ImageEvents[:i], hook.Status.ImageEvents[i+1:]...)
 			hook.Status.ImageEventHistory = append(hook.Status.ImageEventHistory, cloudv1.ImageEventHistory{ImageRepository: event.ImageRepository, ImageTag: event.ImageTag, DateTime: time.Now().Format("2006-01-02-15:04:05")})
 			image := event.ImageRepository + ":" + event.ImageTag
@@ -158,7 +135,7 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *HookReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	hookService = service.NewHookServiceImpl()
+	hookService = service2.NewHookServiceImpl()
 	//控制器监视的资源
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudv1.Hook{}).
@@ -166,28 +143,4 @@ func (r *HookReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&v1.Deployment{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: 1}).
 		Complete(r)
-}
-
-//checkJob 检验image job
-//func (r *HookReconciler) checkJob(hook *cloudv1.Hook) bool {
-//	for _, event := range hook.Spec.ImageEvents {
-//		image := event.ImageRepository + ":" + event.ImageTag
-//		for i, history := range hook.Spec.GitEventHistory {
-//			if history.ImageName == image {
-//				hook.Spec.GitEventHistory[i].Status = "Successful" // Completed
-//				return true
-//			}
-//		}
-//	}
-//	return false
-//}
-
-func getNeedUpdateDeployment(imageEvent cloudv1.ImageEvent, hook *cloudv1.Hook) *[]cloudv1.Deploy {
-	var deploys []cloudv1.Deploy
-	for _, item := range hook.Spec.Hooks {
-		if item.ImageRepository == imageEvent.ImageRepository {
-			deploys = append(deploys, item.Deploys...)
-		}
-	}
-	return &deploys
 }

@@ -15,4 +15,3 @@ spec:
         - container_name: testimage
           deploy_name: controltower-test
           namespace: default
-          type:
