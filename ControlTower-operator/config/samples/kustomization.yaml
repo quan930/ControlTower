@@ -1,4 +1,7 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - cloud_v1_hook.yaml
+- daemonset-test.yaml
+- deploy-test.yaml
+- statefulset-test.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

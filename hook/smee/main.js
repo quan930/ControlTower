@@ -1,12 +1,15 @@
 const SmeeClient = require('smee-client')
 
+console.log(process.env.GITHUB)
+console.log(process.env.DOCKERHUB)
+
 const smee1 = new SmeeClient({
-    source: 'https://smee.io/xzMYO1EMlJciCLhw',
+    source: process.env.GITHUB,
     target: 'http://localhost:8080/api/v1/hook/github',
     logger: console
 })
 const smee2 = new SmeeClient({
-    source: 'https://smee.io/VfwJDdPvLsJZjr5o',
+    source: process.env.DOCKERHUB,
     target: 'http://localhost:8080/api/v1/hook/dockerhub',
     logger: console
 })
