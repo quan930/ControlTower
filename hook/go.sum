@@ -400,6 +400,8 @@ github.com/quan930/ControlTower/ControlTower-operator v0.0.0-20220302154351-f8c4
 github.com/quan930/ControlTower/ControlTower-operator v0.0.0-20220302154351-f8c4694e04e3/go.mod h1:ri42INn/oltX7hMHZgQPun4ib3kMqtRDjfAh/YdXSyg=
 github.com/quan930/ControlTower/ControlTower-operator v0.0.0-20220302161451-05828e535153 h1:MCPatizfsuR+JPiK81au3Fab7AfpVMduYizsDrk0Ndc=
 github.com/quan930/ControlTower/ControlTower-operator v0.0.0-20220302161451-05828e535153/go.mod h1:ri42INn/oltX7hMHZgQPun4ib3kMqtRDjfAh/YdXSyg=
+github.com/quan930/ControlTower/ControlTower-operator v0.0.0-20220303133553-2a7d02da6edb h1:Wza6Oea49pAtt3UkZcdHm+kAoLCv1ryTbxDuPyKlveo=
+github.com/quan930/ControlTower/ControlTower-operator v0.0.0-20220303133553-2a7d02da6edb/go.mod h1:ri42INn/oltX7hMHZgQPun4ib3kMqtRDjfAh/YdXSyg=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
