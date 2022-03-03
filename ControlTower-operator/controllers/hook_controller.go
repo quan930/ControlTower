@@ -18,12 +18,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/google/uuid"
+	"github.com/quan930/ControlTower/ControlTower-operator/pkg/service"
 	v1 "k8s.io/api/apps/v1"
-	v13 "k8s.io/api/batch/v1"
-	v12 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -40,6 +37,8 @@ type HookReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+var hookService service.HookService
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -78,8 +77,12 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	if len(hook.Status.GitEvents) > 0 {
 		klog.Info("GitEvents > 0")
 		for i, event := range hook.Status.GitEvents {
-			job, imagename := r.checkGitEvent(event, hook)
+			job, imagename := hookService.GetJobByCheckGitEvent(event, hook)
 			if job != nil {
+				err = ctrl.SetControllerReference(hook, job, r.Scheme)
+				if err != nil {
+					return ctrl.Result{}, err
+				}
 				klog.Info("Creating a new Job", "Job.Namespace", job.Namespace, "Job.Name", job.Name)
 				err = r.Create(ctx, job)
 				if err != nil {
@@ -97,7 +100,6 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 				klog.Error(err, "Failed to update Hook/Status")
 				return ctrl.Result{}, err
 			}
-			klog.Info(hook)
 			return ctrl.Result{}, nil
 		}
 	}
@@ -156,6 +158,7 @@ func (r *HookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *HookReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	hookService = service.NewHookServiceImpl()
 	//控制器监视的资源
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudv1.Hook{}).
@@ -163,67 +166,6 @@ func (r *HookReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&v1.Deployment{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: 1}).
 		Complete(r)
-}
-
-//checkGitEvent 返回job image name
-func (r *HookReconciler) checkGitEvent(event cloudv1.GitEvent, hook *cloudv1.Hook) (*v13.Job, *string) {
-	for _, item := range hook.Spec.Hooks {
-		if event.GitRepository == item.GitRepository {
-			for _, branch := range item.Branches {
-				if branch == event.Branch {
-					klog.Info("need to deploy buildImage job")
-					imageName := item.ImageRepository + ":" + time.Now().Format("20060102-1504")
-					size1 := int32(1)
-					size5 := int32(5)
-					tr := true
-					job := &v13.Job{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      hook.Name + "-buildimagejob" + "-" + uuid.New().String()[0:8],
-							Namespace: "controltower-operator-system",
-						},
-						Spec: v13.JobSpec{
-							Completions:  &size1,
-							Parallelism:  &size1,
-							BackoffLimit: &size5,
-							Template: v12.PodTemplateSpec{
-								Spec: v12.PodSpec{
-									RestartPolicy: v12.RestartPolicy("OnFailure"),
-									Volumes: []v12.Volume{{
-										Name:         "lifecycle",
-										VolumeSource: v12.VolumeSource{EmptyDir: &v12.EmptyDirVolumeSource{}},
-									}},
-									Containers: []v12.Container{{
-										Image:           "lilqcn/builder:0.0.4-dind",
-										Name:            "dind",
-										Env:             []v12.EnvVar{{Name: "DOCKER_TLS_CERTDIR", Value: ""}},
-										SecurityContext: &v12.SecurityContext{Privileged: &tr},
-										VolumeMounts:    []v12.VolumeMount{{Name: "lifecycle", MountPath: "/lifecycle"}},
-									}, {
-										Image: "lilqcn/builder:0.0.4",
-										Name:  "builder",
-										Env: []v12.EnvVar{
-											{Name: "DOCKER_HOST", Value: "tcp://localhost:2375"},
-											{Name: "REPO", Value: item.GitRepository},
-											{Name: "BRANCH", Value: event.Branch},
-											{Name: "DOCKERFILE", Value: item.Dockerfile},
-											{Name: "IMAGE", Value: imageName},
-											{Name: "USER", Value: item.ImageRepoUser},
-											{Name: "PASSWORD", Value: item.ImageRepoPassword},
-										},
-										VolumeMounts: []v12.VolumeMount{{Name: "lifecycle", MountPath: "/lifecycle"}},
-									}},
-								},
-							},
-						},
-					}
-					// Set Hook instance as the owner and controller
-					ctrl.SetControllerReference(hook, job, r.Scheme)
-					return job, &imageName
-				}
-			}
-		}
-	}
-	return nil, nil
 }
 
 //checkJob 检验image job
