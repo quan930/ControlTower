@@ -8,7 +8,6 @@
     `v1.15.0`
 ### todo
 + check error job (hook + container)
-+ crd smee (webhook url config)
 
 ### links
 + https://stackoverflow.com/questions/52768922/how-to-check-if-kubernetes-job-is-successful-or-failure-using-client-go-library

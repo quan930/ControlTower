@@ -23,4 +23,15 @@ spec:
               name: hook
         - name: smee
           image: lilqcn/smee:0.0.4
+          env:
+            - name: GITHUB
+              valueFrom:
+                configMapKeyRef:
+                  name: smee-config
+                  key: github_hook
+            - name: DOCKERHUB
+              valueFrom:
+                configMapKeyRef:
+                  name: smee-config
+                  key: dockerhub_hook
       serviceAccountName: controller-manager
