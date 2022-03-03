@@ -6,6 +6,8 @@ import (
 	"github.com/quan930/ControlTower/builder/pkg/git"
 	"k8s.io/klog/v2"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 func parseENV() (string, string, string, string, string, string) {
@@ -51,11 +53,11 @@ func main() {
 		klog.Fatal(err)
 	}
 
-	f, err := os.Create("/lifecycle/main-terminated")
-	defer f.Close()
+	cmd := exec.Command("sh", "-c", `echo "hello" | nc -U /lifecycle/test.sock`)
+	out, err := cmd.CombinedOutput()
+	trimmed := strings.TrimSpace(string(out))
+	klog.Info(trimmed)
 	if err != nil {
-		klog.Fatal(err)
-	} else {
-		klog.Info("/lifecycle/main-terminated")
+		klog.Warning(trimmed)
 	}
 }

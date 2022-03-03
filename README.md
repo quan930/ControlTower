@@ -7,9 +7,7 @@
 
     `v1.15.0`
 ### todo
-+ update hook status
 + check error job (hook + container)
-+ build job (Socat)
 + crd smee (webhook url config)
 + workloads (type)
 

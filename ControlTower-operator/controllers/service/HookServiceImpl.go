@@ -48,13 +48,13 @@ func (i HookServiceImpl) GetJobByCheckGitEvent(event cloudv1.GitEvent, hook *clo
 										VolumeSource: v12.VolumeSource{EmptyDir: &v12.EmptyDirVolumeSource{}},
 									}},
 									Containers: []v12.Container{{
-										Image:           "lilqcn/builder:0.0.4-dind",
+										Image:           "lilqcn/builder:0.0.5-dind",
 										Name:            "dind",
 										Env:             []v12.EnvVar{{Name: "DOCKER_TLS_CERTDIR", Value: ""}},
 										SecurityContext: &v12.SecurityContext{Privileged: &tr},
 										VolumeMounts:    []v12.VolumeMount{{Name: "lifecycle", MountPath: "/lifecycle"}},
 									}, {
-										Image: "lilqcn/builder:0.0.4",
+										Image: "lilqcn/builder:0.0.5",
 										Name:  "builder",
 										Env: []v12.EnvVar{
 											{Name: "DOCKER_HOST", Value: "tcp://localhost:2375"},
