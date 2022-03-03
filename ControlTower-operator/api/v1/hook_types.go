@@ -67,21 +67,24 @@ func init() {
 
 //HookItem HookItem
 type HookItem struct {
-	GitRepository     string   `json:"git_repository"`
-	Branches          []string `json:"branches"`
-	ImageRepository   string   `json:"image_repository"`
-	Dockerfile        string   `json:"dockerfile"`
-	ImageRepoUser     string   `json:"image_repo_user"`
-	ImageRepoPassword string   `json:"image_repo_password"`
+	GitRepository   string   `json:"git_repository"`
+	Branches        []string `json:"branches"`
+	ImageRepository string   `json:"image_repository"`
+	//+kubebuilder:default:=Dockerfile
+	Dockerfile        string `json:"dockerfile"`
+	ImageRepoUser     string `json:"image_repo_user"`
+	ImageRepoPassword string `json:"image_repo_password"`
 	//+nullable
-	Deploys []Deploy `json:"deploys"`
+	Workloads []Workload `json:"workloads"`
 }
 
-//Deploy deployment config
-type Deploy struct {
+//Workload Deployment;StatefulSet;DaemonSet config
+type Workload struct {
 	ContainerName string `json:"container_name"`
-	DeployName    string `json:"deploy_name"`
+	Name          string `json:"name"`
 	Namespace     string `json:"namespace"`
+	//+kubebuilder:validation:Enum=Deployment;StatefulSet;DaemonSet
+	Type string `json:"type"`
 }
 
 //GitEvent git event
