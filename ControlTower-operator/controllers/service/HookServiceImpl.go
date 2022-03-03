@@ -95,9 +95,11 @@ func (i HookServiceImpl) UpdateDeployment(imageEvent cloudv1.ImageEvent, hook *c
 			if workload.Type == "Deployment" {
 				updateDeployment(client, ctx, workload, newImage)
 			} else if workload.Type == "StatefulSet" {
-
+				//StatefulSet
+				updateStatefulSet(client, ctx, workload, newImage)
 			} else {
 				//DaemonSet
+				updateDaemonSet(client, ctx, workload, newImage)
 			}
 		}
 	}
@@ -107,7 +109,7 @@ func updateDeployment(client client.Client, ctx context.Context, workload cloudv
 	foundDeployment := &v1.Deployment{}
 	err := client.Get(ctx, types.NamespacedName{Name: workload.Name, Namespace: workload.Namespace}, foundDeployment)
 	if err != nil && errors.IsNotFound(err) {
-		klog.Info("not found deployment")
+		klog.Info("not found Deployment")
 	}
 	containers := &foundDeployment.Spec.Template.Spec.Containers
 	for j, container := range *containers {
@@ -117,6 +119,42 @@ func updateDeployment(client client.Client, ctx context.Context, workload cloudv
 	}
 	err = client.Update(ctx, foundDeployment)
 	if err != nil {
-		klog.Error(err, "Failed to update deployment image")
+		klog.Error(err, "Failed to update Deployment image")
+	}
+}
+
+func updateDaemonSet(client client.Client, ctx context.Context, workload cloudv1.Workload, newImage string) {
+	foundDaemonSet := &v1.DaemonSet{}
+	err := client.Get(ctx, types.NamespacedName{Name: workload.Name, Namespace: workload.Namespace}, foundDaemonSet)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("not found DaemonSet")
+	}
+	containers := &foundDaemonSet.Spec.Template.Spec.Containers
+	for j, container := range *containers {
+		if container.Name == workload.ContainerName {
+			foundDaemonSet.Spec.Template.Spec.Containers[j].Image = newImage
+		}
+	}
+	err = client.Update(ctx, foundDaemonSet)
+	if err != nil {
+		klog.Error(err, "Failed to update DaemonSet image")
+	}
+}
+
+func updateStatefulSet(client client.Client, ctx context.Context, workload cloudv1.Workload, newImage string) {
+	foundStatefulSet := &v1.StatefulSet{}
+	err := client.Get(ctx, types.NamespacedName{Name: workload.Name, Namespace: workload.Namespace}, foundStatefulSet)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("not found StatefulSet")
+	}
+	containers := &foundStatefulSet.Spec.Template.Spec.Containers
+	for j, container := range *containers {
+		if container.Name == workload.ContainerName {
+			foundStatefulSet.Spec.Template.Spec.Containers[j].Image = newImage
+		}
+	}
+	err = client.Update(ctx, foundStatefulSet)
+	if err != nil {
+		klog.Error(err, "Failed to update StatefulSet image")
 	}
 }
