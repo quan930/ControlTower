@@ -44,24 +44,8 @@ spec:
                       items:
                         type: string
                       type: array
-                    deploys:
-                      items:
-                        description: Deploy deployment config
-                        properties:
-                          container_name:
-                            type: string
-                          deploy_name:
-                            type: string
-                          namespace:
-                            type: string
-                        required:
-                        - container_name
-                        - deploy_name
-                        - namespace
-                        type: object
-                      nullable: true
-                      type: array
                     dockerfile:
+                      default: Dockerfile
                       type: string
                     git_repository:
                       type: string
@@ -71,14 +55,38 @@ spec:
                       type: string
                     image_repository:
                       type: string
+                    workloads:
+                      items:
+                        description: Workload Deployment;StatefulSet;DaemonSet config
+                        properties:
+                          container_name:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                          type:
+                            enum:
+                            - Deployment
+                            - StatefulSet
+                            - DaemonSet
+                            type: string
+                        required:
+                        - container_name
+                        - name
+                        - namespace
+                        - type
+                        type: object
+                      nullable: true
+                      type: array
                   required:
                   - branches
-                  - deploys
                   - dockerfile
                   - git_repository
                   - image_repo_password
                   - image_repo_user
                   - image_repository
+                  - workloads
                   type: object
                 type: array
             required:

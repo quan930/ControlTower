@@ -82,30 +82,41 @@ func (i HookServiceImpl) GetJobByCheckGitEvent(event cloudv1.GitEvent, hook *clo
 }
 
 func (i HookServiceImpl) UpdateDeployment(imageEvent cloudv1.ImageEvent, hook *cloudv1.Hook, client client.Client) {
-	var deploys []cloudv1.Deploy
+	var workloads []cloudv1.Workload
 	for _, item := range hook.Spec.Hooks {
 		if item.ImageRepository == imageEvent.ImageRepository {
-			deploys = append(deploys, item.Deploys...)
+			workloads = append(workloads, item.Workloads...)
 		}
 	}
-	if len(deploys) > 0 {
+	if len(workloads) > 0 {
 		ctx := context.Background()
-		for _, deploy := range deploys {
-			foundDeployment := &v1.Deployment{}
-			err := client.Get(ctx, types.NamespacedName{Name: deploy.DeployName, Namespace: deploy.Namespace}, foundDeployment)
-			if err != nil && errors.IsNotFound(err) {
-				klog.Info("not found deployment")
-			}
-			containers := &foundDeployment.Spec.Template.Spec.Containers
-			for j, container := range *containers {
-				if container.Name == deploy.ContainerName {
-					foundDeployment.Spec.Template.Spec.Containers[j].Image = imageEvent.ImageRepository + ":" + imageEvent.ImageTag
-				}
-			}
-			err = client.Update(ctx, foundDeployment)
-			if err != nil {
-				klog.Error(err, "Failed to update Hook")
+		for _, workload := range workloads {
+			newImage := imageEvent.ImageRepository + ":" + imageEvent.ImageTag
+			if workload.Type == "Deployment" {
+				updateDeployment(client, ctx, workload, newImage)
+			} else if workload.Type == "StatefulSet" {
+
+			} else {
+				//DaemonSet
 			}
 		}
+	}
+}
+
+func updateDeployment(client client.Client, ctx context.Context, workload cloudv1.Workload, newImage string) {
+	foundDeployment := &v1.Deployment{}
+	err := client.Get(ctx, types.NamespacedName{Name: workload.Name, Namespace: workload.Namespace}, foundDeployment)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("not found deployment")
+	}
+	containers := &foundDeployment.Spec.Template.Spec.Containers
+	for j, container := range *containers {
+		if container.Name == workload.ContainerName {
+			foundDeployment.Spec.Template.Spec.Containers[j].Image = newImage
+		}
+	}
+	err = client.Update(ctx, foundDeployment)
+	if err != nil {
+		klog.Error(err, "Failed to update deployment image")
 	}
 }
