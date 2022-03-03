@@ -9,9 +9,18 @@ spec:
         - main
       image_repository: lilqcn/testimage
       dockerfile: Dockerfile
-      image_repo_user: lilqcn
-      image_repo_password: daquan123456
-      deploys:
+      image_repo_user: xxx
+      image_repo_password: xxx
+      workloads:
         - container_name: testimage
-          deploy_name: controltower-test
+          name: controltower-deployment-test
           namespace: default
+          type: Deployment
+        - container_name: testimage
+          name: controltower-daemonset-test
+          namespace: default
+          type: DaemonSet
+        - container_name: testimage
+          name: controltower-statefulset-test
+          namespace: default
+          type: StatefulSet

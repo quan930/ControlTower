@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controltower-deployment-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controltower
+  template:
+    metadata:
+      labels:
+        app: controltower
+    spec:
+      containers:
+        - name: testimage
+          image: lilqcn/testimage:1.10

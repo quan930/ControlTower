@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: controltower-statefulset-test
+spec:
+  selector:
+    matchLabels:
+      app: controltower
+  serviceName: controltower
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: controltower
+    spec:
+      containers:
+        - name: testimage
+          image: lilqcn/testimage:1.10
