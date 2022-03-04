@@ -1,0 +1,183 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
+  name: hooks.cloud.lilqcn
+spec:
+  group: cloud.lilqcn
+  names:
+    kind: Hook
+    listKind: HookList
+    plural: hooks
+    singular: hook
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Hook is the Schema for the hooks API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: HookSpec defines the desired state of Hook
+            properties:
+              hooks:
+                items:
+                  description: HookItem HookItem
+                  properties:
+                    branches:
+                      items:
+                        type: string
+                      type: array
+                    dockerfile:
+                      default: Dockerfile
+                      type: string
+                    git_repository:
+                      type: string
+                    image_repo_password:
+                      type: string
+                    image_repo_user:
+                      type: string
+                    image_repository:
+                      type: string
+                    workloads:
+                      items:
+                        description: Workload Deployment;StatefulSet;DaemonSet config
+                        properties:
+                          container_name:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                          type:
+                            enum:
+                            - Deployment
+                            - StatefulSet
+                            - DaemonSet
+                            type: string
+                        required:
+                        - container_name
+                        - name
+                        - namespace
+                        - type
+                        type: object
+                      nullable: true
+                      type: array
+                  required:
+                  - branches
+                  - dockerfile
+                  - git_repository
+                  - image_repo_password
+                  - image_repo_user
+                  - image_repository
+                  - workloads
+                  type: object
+                type: array
+            required:
+            - hooks
+            type: object
+          status:
+            description: HookStatus defines the observed state of Hook
+            properties:
+              git_event_history:
+                items:
+                  description: GitEventHistory git event history
+                  properties:
+                    branch:
+                      type: string
+                    build_image_job:
+                      type: string
+                    date_time:
+                      type: string
+                    git_repository:
+                      type: string
+                    image_name:
+                      type: string
+                    status:
+                      type: string
+                  required:
+                  - branch
+                  - build_image_job
+                  - date_time
+                  - git_repository
+                  - image_name
+                  - status
+                  type: object
+                nullable: true
+                type: array
+              git_events:
+                items:
+                  description: GitEvent git event
+                  properties:
+                    branch:
+                      type: string
+                    git_repository:
+                      type: string
+                  required:
+                  - branch
+                  - git_repository
+                  type: object
+                nullable: true
+                type: array
+              image_event_history:
+                items:
+                  description: ImageEventHistory Image Event History
+                  properties:
+                    date_time:
+                      type: string
+                    image_repository:
+                      type: string
+                    image_tag:
+                      type: string
+                  required:
+                  - date_time
+                  - image_repository
+                  - image_tag
+                  type: object
+                nullable: true
+                type: array
+              image_events:
+                items:
+                  description: ImageEvent Image Event
+                  properties:
+                    image_repository:
+                      type: string
+                    image_tag:
+                      type: string
+                  required:
+                  - image_repository
+                  - image_tag
+                  type: object
+                nullable: true
+                type: array
+            required:
+            - git_event_history
+            - git_events
+            - image_event_history
+            - image_events
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
