@@ -17,12 +17,12 @@ spec:
     spec:
       containers:
         - name: hook-server
-          image: lilqcn/hook:0.0.4
+          image: lilqcn/hook:0.4.16
           ports:
             - containerPort: 8080
               name: hook
         - name: smee
-          image: lilqcn/smee:0.0.4
+          image: lilqcn/smee:0.4.16
           env:
             - name: GITHUB
               valueFrom:

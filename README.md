@@ -5,7 +5,7 @@
     `1.17.2`
 + operator-sdk
 
-    `v1.15.0`
+    `v1.18.0`
 ### todo
 + check error job (hook + container)
 
