@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: 'lilqcn/builder:0.0.4-dind'
+          image: 'lilqcn/builder:0.4.16-dind'
           env:
             - name: DOCKER_TLS_CERTDIR
               value: ""
@@ -19,7 +19,7 @@ spec:
             - name: lifecycle
               mountPath: /lifecycle
         - name: builder
-          image: 'lilqcn/builder:0.0.4'
+          image: 'lilqcn/builder:0.4.16'
           env:
             - name: DOCKER_HOST
               value: tcp://localhost:2375
