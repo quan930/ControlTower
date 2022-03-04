@@ -1,0 +1,26 @@
+apiVersion: cloud.lilqcn/v1
+kind: Hook
+metadata:
+  name: hook-sample
+spec:
+  hooks:
+    - git_repository: https://github.com/lianglitest/testimage
+      branches:
+        - main
+      image_repository: lilqcn/testimage
+      dockerfile: xxx
+      image_repo_user: xxx
+      image_repo_password: daquan123456
+      workloads:
+        - container_name: testimage
+          name: controltower-deployment-test
+          namespace: default
+          type: Deployment
+        - container_name: testimage
+          name: controltower-daemonset-test
+          namespace: default
+          type: DaemonSet
+        - container_name: testimage
+          name: controltower-statefulset-test
+          namespace: default
+          type: StatefulSet

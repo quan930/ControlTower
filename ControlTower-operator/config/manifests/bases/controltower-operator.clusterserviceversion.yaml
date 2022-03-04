@@ -1,0 +1,50 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: controltower-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Hook is the Schema for the hooks API
+      displayName: Hook
+      kind: Hook
+      name: hooks.cloud.lilqcn
+      version: v1
+  description: CICD
+  displayName: controltower
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - ci
+  - cd
+  - liangquan li
+  links:
+  - name: Controltower Operator
+    url: https://controltower-operator.domain
+  maintainers:
+  - email: 1583090876@qq.com
+    name: Liangquan Li
+  maturity: alpha
+  provider:
+    name: lilq.cn
+    url: https://github.com/quan930/ControlTower
+  version: 0.0.0
