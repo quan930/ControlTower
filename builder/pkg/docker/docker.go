@@ -58,6 +58,16 @@ func PushImage(cli *client.Client, registryUser string, registryPassword string,
 	return nil
 }
 
+func GetImageSha256(cli *client.Client, image string) (error,*string) {
+	dis,err := cli.DistributionInspect(context.Background(),image,"")
+	if err != nil {
+		klog.Error(err)
+		return err,nil
+	}
+	sha256 := dis.Descriptor.Digest.String()
+	return nil,&sha256
+}
+
 func getContext(filePath string) io.Reader {
 	// Use homedir.Expand to resolve paths like '~/repos/myrepo'
 	fileP, _ := homedir.Expand(filePath)
