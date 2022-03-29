@@ -1,13 +1,12 @@
 package main
 
 import (
-	"github.com/docker/docker/client"
-	"github.com/quan930/ControlTower/builder/pkg/docker"
+	"context"
+	"github.com/containers/podman/v4/pkg/bindings"
 	"github.com/quan930/ControlTower/builder/pkg/git"
+	podmanHelper "github.com/quan930/ControlTower/builder/pkg/podman"
 	"k8s.io/klog/v2"
 	"os"
-	"os/exec"
-	"strings"
 )
 
 func parseENV() (string, string, string, string, string, string) {
@@ -39,25 +38,18 @@ func main() {
 		klog.Fatal(err)
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	var conn context.Context
+	conn, err = bindings.NewConnection(context.Background(), "unix:///usr/lib/systemd/system/podman.socket")
+	if err != nil {
+		klog.Warning(err)
+		return
+	}
+	err = podmanHelper.BuildImage(conn,dockerfilePath,"./temp",image)
 	if err != nil {
 		klog.Fatal(err)
 	}
-
-	err = docker.BuildImage(cli, dockerfilePath, "./temp", image)
+	err = podmanHelper.PushImage(conn, username, password, image)
 	if err != nil {
 		klog.Fatal(err)
-	}
-	err = docker.PushImage(cli, username, password, image)
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	cmd := exec.Command("sh", "-c", `echo "hello" | nc -U /lifecycle/test.sock`)
-	out, err := cmd.CombinedOutput()
-	trimmed := strings.TrimSpace(string(out))
-	klog.Info(trimmed)
-	if err != nil {
-		klog.Warning(trimmed)
 	}
 }
