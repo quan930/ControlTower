@@ -17,7 +17,7 @@ func BuildImage(cli *client.Client, dockerfilePath string, filePath string, imag
 	imageBuildResponse, err := cli.ImageBuild(context.Background(), getContext(filePath), types.ImageBuildOptions{
 		Dockerfile: dockerfilePath,
 		Tags:       []string{imageName},
-		NoCache: true,
+		NoCache:    true,
 	})
 	if err != nil {
 		klog.Error(err)
@@ -59,14 +59,14 @@ func PushImage(cli *client.Client, registryUser string, registryPassword string,
 	return nil
 }
 
-func GetImageSha256(cli *client.Client, image string) (error,*string) {
-	dis,err := cli.DistributionInspect(context.Background(),image,"")
+func GetImageSha256(cli *client.Client, image string) (error, *string) {
+	dis, err := cli.DistributionInspect(context.Background(), image, "")
 	if err != nil {
 		klog.Error(err)
-		return err,nil
+		return err, nil
 	}
 	sha256 := dis.Descriptor.Digest.String()
-	return nil,&sha256
+	return nil, &sha256
 }
 
 func getContext(filePath string) io.Reader {
