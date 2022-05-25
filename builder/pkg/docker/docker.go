@@ -17,6 +17,7 @@ func BuildImage(cli *client.Client, dockerfilePath string, filePath string, imag
 	imageBuildResponse, err := cli.ImageBuild(context.Background(), getContext(filePath), types.ImageBuildOptions{
 		Dockerfile: dockerfilePath,
 		Tags:       []string{imageName},
+		NoCache: true,
 	})
 	if err != nil {
 		klog.Error(err)
